@@ -13,10 +13,10 @@ dir_name = 'C:/Users/Arnau/Desktop/TFG/output/'; % Path to the files
     
 %%% Important parameters
 nVols = 218;
-nPreds = 18+1;   %% number of stimulation blocks plus 1 for baseline 
-%CondClass=1:3;   %% the conditions to classify, their codes in txt file
-nTrials = 18; %number of stimulation blocks (without baseline) per run
-nPerRun = 6;   %% number of blocks per condition per run
+nPreds = 18+1;  %% number of stimulation blocks plus 1 for baseline 
+%CondClass=1:3; %% the conditions to classify, their codes in txt file
+nTrials = 18;   %number of stimulation blocks (without baseline) per run
+nPerRun = 6;    %% number of blocks per condition per run
 nRuns = 4;
 
 % !! The first subject underwent a short version of the experiment 
@@ -27,7 +27,6 @@ dm_condition = cell(1,nRuns);
 cond_locs_name = cell(1,4);
 
 % !! Hem not used yet - i'm not separating by left and right hemisphere
-% I'm not using the condition specifier files either
 
 for run = 1:nRuns
     
