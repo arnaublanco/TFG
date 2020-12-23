@@ -6,8 +6,8 @@ close all;
 data_dir = 'C:/Users/Arnau/Desktop/TFG/output/';
 %_space-MNI152NLin2009cAsym_res-2_desc-preproc
 %data_dir = 'C:/Users/Arnau/Documents/TFG/ds002715/';
-nRuns = 4;
-subject = 3;
+nRuns = 1;
+subject = 1;
 
 figure;
 for i=1:nRuns
@@ -43,11 +43,11 @@ for i=1:nRuns
     title('Voxel ('+string(x)+','+string(y)+','+string(z)+')');
     hold on
 
-    dm = ones(size(voxel,2),2);
-    dm(1:50,2) = 0;
-    [B,DEV,STATS] = glmfit(dm,voxel,'normal','constant','off');
+    %dm = ones(size(voxel,2),2);
+    %dm(1:50,2) = 0;
+    %[B,DEV,STATS] = glmfit(dm,voxel,'normal','constant','off');
 
-    y = B(1)*dm(:,1)' + B(2)*dm(:,2)';
+    %y = B(1)*dm(:,1)' + B(2)*dm(:,2)';
     %plot(1:size(voxel,2),y);
     hold on
 
@@ -55,6 +55,8 @@ end
 
 %% To open .tsv files
 
-fid = fopen(a);
-C = textscan(fid, '%f %f %s', 'HeaderLines', 1);
-fclose(fid);
+a = 'test.tsv';
+readtsv(a);
+
+%%
+

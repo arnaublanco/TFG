@@ -10,7 +10,7 @@ function [input_file_info] = getFileInfo(subject, Hem, CondClass, POIfile_ind)
     % input_file_info: MATLAB object containing the data info.
 
 dir_name = 'C:/Users/Arnau/Desktop/TFG/output/'; % Path to the files
-dir_rois = 'C:/Users/Arnau/Desktop/TFG/ROIs/'; % Path to the ROIs/POIs
+dir_poi = 'C:/Users/Arnau/Desktop/TFG/output/'; % Path
     
 %%% Important parameters
 nVols = 218;
@@ -50,7 +50,7 @@ for run = 1:nRuns
     dir_dm_b = dir_name + s + "/" + s + "_ses-mri_task-AVScenes" + w + "_run-0" + run + '_block.txt';
     dir_dm_c = dir_name + s + "/" + s + "_ses-mri_task-AVScenes" + w + "_run-0" + run + '_cond.txt';
     
-    % If the design matrix files do not exist, create them in createDesignMatrix.m
+    % If the design matrix files do not exist, create them.
     if ~exist(dir_dm_b,'file') || ~exist(dir_dm_c,'file')
         createDesignMatrix(subject,nPreds,cond_locs_name{run},dir_dm_b,dir_dm_c);
     end
@@ -60,11 +60,11 @@ for run = 1:nRuns
     
     % POI: Patch-of-Interest
     if POIfile_ind == 1
-        poi_name = dir_rois + 'Auditory.nii'; % Auditory.poi
+        poi_name = ''; % Auditory.poi
     elseif POIfile_ind == 2
-        poi_name = dir_rois + 'Motor.nii'; % Motor.poi
+        poi_name = ''; % Motor.poi
     else
-        poi_name = dir_rois + 'Visual.nii'; % Visual.poi
+        poi_name = ''; % Visual.poi
     end
     
 end
