@@ -3,7 +3,7 @@ close all;
 
 %% Data acquistion
 
-data_dir = 'C:/Users/Arnau/Desktop/TFG/output/';
+data_dir = '/Users/blancoarnau/Desktop/';
 %_space-MNI152NLin2009cAsym_res-2_desc-preproc
 %data_dir = 'C:/Users/Arnau/Documents/TFG/ds002715/';
 nRuns = 1;
@@ -59,4 +59,3 @@ a = 'test.tsv';
 readtsv(a);
 
 %%
-

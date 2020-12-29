@@ -65,27 +65,31 @@ for r=1:nRuns
     main = niftiread(funcName{r});
     
     idx = find(repmat(locsV,[1 1 1 nVols])); % Find indices where there's a 1.
+    nVox = size(idx,1)/nVols; % Number of voxels
     main_masked = main(:,:,:,end-nVols+1:end); % Crop functional data with nVols
     
     funcData(:,:,r) = reshape(main_masked(idx),[nVox nVols])';  %% get timecourses from POI file
 
     % Load in DESIGN MATRIX file
     dmTmp = readDM(dmName{r},nPreds);
-    DM(:,:,r) = dmTmp(end-nVols+1:end,:);
+    DM(:,:,r)=dmTmp.SDMMatrix;
 
     if(size(DM,1)~=size(funcData,1))
-        error('Design Matrix and functional data volume number does not match');
+        error('Design Matrix and MTC data volume number does not match');
     end
+
+
 
     % PERFORM GLM COMPUTATION - SINGLE TRIAL / BLOCK COMPUTATION
     
-    % GLM performed single trial / block, not deconvolved (can't be)
-    % importantly I am z-scoring the timeseries here before running GLM
-    % in order to obtain comparable values to output
-    [out,out2] = computeGLM(funcData(:,:,r), DM(:,:,r), zTimeSeries,zBetas);
 
-    betas(:,:,r) = out(1:nPreds-1,:);  %% remove last beta, mean confound
-    tvals(:,:,r) = out2(1:nPreds-1,:);  %% t values
+    % glm performed single trial / block, not deconvolved (can't be)
+    % importantly I am zscoring the timeseries here before running GLM
+    % in order to obtain comparable values to BV output
+    [out,out2]=computeGLM(funcData(:,:,r), DM(:,:,r), zTimeSeries,zBetas);
+
+    betas(:,:,r)=out(1:nPreds-1,:);  %% remove last beta, mean confound
+    tvals(:,:,r)=out2(1:nPreds-1,:);  %% t values
     %the dimensions here (e.g. 1:nPreds-1) need to match whatever was defined above,
     %otherwise dimension mismatch
     
@@ -98,8 +102,8 @@ end   %% end loop across runs
 % load in sequence (condition data)
 nTrials=size(betas,1);
 %nPerRun=6;
-betasC=zeros(nPerRun,nVox,nConditions,nRuns);  %% betas split by condition
-tvalsC=zeros(nPerRun,nVox,nConditions,nRuns);
+betasC=zeros(nPerRun,nVert,nConditions,nRuns);  %% betas split by condition
+tvalsC=zeros(nPerRun,nVert,nConditions,nRuns);
 
 for r=1:nRuns
     

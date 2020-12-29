@@ -4,16 +4,22 @@ function [input_file_info] = getFileInfo(subject, Hem, CondClass, POIfile_ind)
     % subject: Subject number
     % Hem: 'LH' or 'RH'
     % CondClass: Conditions to classify
-    % POIfile_ind: POI file that will be used (1, 2 or 3)
+    % POIfile_ind: Index in POI file (1 -> Auditory, 2 -> Motor or 3 -> EVC)
     
 % OUTPUT:
     % input_file_info: MATLAB object containing the data info.
 
-dir_name = 'C:/Users/Arnau/Desktop/TFG/output/'; % Path to the files
-dir_rois = 'C:/Users/Arnau/Desktop/TFG/ROIs/'; % Path to the ROIs/POIs
+dir_name = '/Users/blancoarnau/Google Drive/TFG Arnau Blanco/code/output/'; % Path to the files
+dir_rois = '/Users/blancoarnau/Google Drive/TFG Arnau Blanco/code/ROIs/'; % Path to the ROIs/POIs
     
 %%% Important parameters
-nVols = 218;
+
+% Less volumes are selected because there's a glitch at the beginning of the signal.
+if subject == 1
+   nVols = 113;
+else
+    nVols = 218;
+end
 nPreds = 18+1;  %% number of stimulation blocks plus 1 for baseline 
 %CondClass=1:3; %% the conditions to classify, their codes in txt file
 nTrials = 18;   %number of stimulation blocks (without baseline) per run
@@ -29,15 +35,16 @@ cond_locs_name = cell(1,4);
 
 % !! Hem not used yet - i'm not separating by left and right hemisphere
 
+if subject == 1
+    w = 'short';
+else
+    w = 'long';
+end
+
+s = "sub-0" + string(subject);
+
 for run = 1:nRuns
     
-    if subject == 1
-        w = 'short';
-    else
-        w = 'long';
-    end
-    
-    s = "sub-0" + string(subject);
     file = s + "_ses-mri_task-AVScenes" + w +"_run-" + string(run) + "_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz";
     
     func_name{run} = dir_name + s + "/" + file; % Functional image file
@@ -60,17 +67,17 @@ for run = 1:nRuns
     
     % POI: Patch-of-Interest
     if POIfile_ind == 1
-        poi_name = dir_rois + 'Auditory.nii'; % Auditory.poi
+        poi_name = dir_rois + "Auditory.nii"; % Auditory.poi
     elseif POIfile_ind == 2
-        poi_name = dir_rois + 'Motor.nii'; % Motor.poi
+        poi_name = dir_rois + "Motor.nii"; % Motor.poi
     else
-        poi_name = dir_rois + 'Visual.nii'; % Visual.poi
+        poi_name = dir_rois + "Visual.nii"; % Visual.poi
     end
     
 end
 
 %%% MATLAB object definition
-input_file_info.dir_name = dir_name;
+input_file_info.dir_name = dir_name + s + "/";
 input_file_info.poi_name = poi_name;
 input_file_info.func_name = func_name;
 input_file_info.dm_name = dm_block;    % Block or trial wise

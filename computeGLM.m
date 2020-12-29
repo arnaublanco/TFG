@@ -2,29 +2,29 @@
 %The code was originally created by Fraser W. Smith (see Smith & Muckli 2010 PNAS)and was adapted to this project by Petra Vetter and Lukasz Bola.
 
 
-function [betas,t]=computeGLM(data, dm, zTimeSeries,zBetas)
+function [betas,t] = computeGLM(data, dm, zTimeSeries,zBetas)
 
 
 if(zTimeSeries==1)
-    data=zscore(data);  %% zscore data, voxel-wise (column wise), crucial 
+    data = zscore(data);  %% zscore data, voxel-wise (column wise), crucial 
 end
 
-nVox=size(data,2);
-nVols=size(data,1);
-betas=zeros(size(dm,2),nVox);
-t=zeros(size(betas));
+nVox = size(data,2);
+nVols = size(data,1);
+betas = zeros(size(dm,2),nVox);
+t = zeros(size(betas));
 
 % independently for each voxel, fit GLM
 for vox=1:nVox
-    [B,dev,stats]=glmfit(dm,data(:,vox),'normal','constant','off');
+    [B,dev,stats] = glmfit(dm,data(:,vox),'normal','constant','off');
     % no adding of additional column of ones
-    betas(:,vox)=B;
-    t(:,vox)=stats.t;
+    betas(:,vox) = B;
+    t(:,vox) = stats.t;
 end
 
 % zscore betas within each voxel, across trials
 if(zBetas)
-    betas=zscore(betas);  %% zscore betas, voxel wise
+    betas = zscore(betas);  %% zscore betas, voxel wise
 end
 
 

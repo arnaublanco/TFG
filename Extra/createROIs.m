@@ -21,6 +21,12 @@ V_visual(V == 17 | V == 18 | V == 19) = 1;
 V_auditory(V == 41 | V == 42 | V == 22) = 1;
 V_motor(V == 4) = 1;
 
+% Resize the masks so that the fit the NifTi files' resolution.
+dim = [62 73 73]; % Dimensions of all the brain scans (width, height and depth)
+V_visual = imresize3(V_visual,[dim(1) dim(2) dim(3)],'nearest');
+V_auditory = imresize3(V_auditory,[dim(1) dim(2) dim(3)],'nearest');
+V_motor = imresize3(V_motor,[dim(1) dim(2) dim(3)],'nearest');
+
 % Save matrices as NifTi files.
 niftiwrite(V_visual,'Visual.nii');
 niftiwrite(V_auditory,'Auditory.nii');
