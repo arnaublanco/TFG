@@ -23,18 +23,18 @@ permGP = 1; % Set to zero for standard analysis, and set to 1 when doing permuta
 [outDR] = readDataMtcPoi(subject, Patch_ind, 'RH', CondClass, POIfile_ind); % Right hemisphere
 
 % Concatenate across vertice dimension - hemispheres
-outD=[];
-f1=size(outDL.betasC);
-f2=size(outDR.betasC);
-if(f1(1)==f2(1) && f1(3)==f2(3) && f1(4)==f2(4))
-    betasC=cat(2,outDL.betasC,outDR.betasC); 
-    S{3}=outDL.S{3};
-    S{3}(4)=f1(2)+f2(2);
-    f=[]; 
-    f.CondClass=CondClass;
-    S{5}=f;
-    outD.betasC=betasC;
-    outD.S=S;
+outD = [];
+f1 = size(outDL.betasC);
+f2 = size(outDR.betasC);
+if(f1(1) == f2(1) && f1(3) == f2(3) && f1(4) == f2(4))
+    betasC = cat(2,outDL.betasC,outDR.betasC); 
+    S{3} = outDL.S{3};
+    S{3}(4) = f1(2)+f2(2);
+    f = []; 
+    f.CondClass = CondClass;
+    S{5} = f;
+    outD.betasC = betasC;
+    outD.S = S;
     
 else
     error('Hemispheric Data mismatch');
@@ -46,10 +46,10 @@ inputRandVec = f;
 %this vector needs to be the same for each subject!
 
 % perform classification for Permutation Analysis
-Spc=zeros(1000,1); Apc=zeros(1000,1);
-betasC=outD.betasC;
-p=outD.S{3};
-CondClass=outD.S{5}.CondClass;
+Spc = zeros(1000,1); Apc = zeros(1000,1);
+betasC = outD.betasC;
+p = outD.S{3};
+CondClass = outD.S{5}.CondClass;
 
 toc % gives time for GLM / load data etc
 tic

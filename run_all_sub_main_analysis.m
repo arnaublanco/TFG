@@ -1,7 +1,7 @@
 % Run the single SVM for all subjects
 
 subjects = 8;
-CondClass = [1 2 3]; % Conditions to classify: Forest, People and Traffic (1, 2 and 3)
+CondClass = [{'forest'}, {'people'}, {'traffic'}]; % Conditions to classify: Forest, People and Traffic (1, 2 and 3)
 
 
 for subject = 1:subjects
