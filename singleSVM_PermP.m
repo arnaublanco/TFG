@@ -93,7 +93,7 @@ for r=1:size(train_set,3)
     [train, pars]=stretch_cols_ind(train, -1,1); 
     
     % train svm model
-    svm_model=svmtrain(gp, train,'-t 0 -c 1');    % -t 0 = linear SVM, -c 1 = cost value of 1
+    svm_model=svmtrain(gp, train,'-t 0 -c 1');    %#ok<SVMTRAIN> % -t 0 = linear SVM, -c 1 = cost value of 1
     svm_mod{r}=svm_model;
     
     % get the weights from model
@@ -134,7 +134,7 @@ for r=1:size(train_set,3)
 
     %% **Test SVM Prediction of Condition Average in Test Run**
     [in]=stretchWithGivenPars(in,[-1 1],pars);  %% put on same scale
-
+    CondClass = 1:3;
     [svma_class(:,r),accuracy,dec]=svmpredict(CondClass',in,svm_model);
 
     svm_av(r)=length(find(svma_class(:,r)==CondClass')) ./ (nConditions);

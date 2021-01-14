@@ -75,9 +75,9 @@ for r = 1:nRuns
     
     funcData(:,:,r) = reshape(main_masked(idx),[nVox nVols])';  %% get timecourses from POI file
 
-    if(~isempty(find(funcData(:,:,r)==0)))
-        error('Zeros in Functional data: requires further thought!');
-    end
+    %if(~isempty(find(funcData(:,:,r)==0)))
+    %    error('Zeros in Functional data: requires further thought!');
+    %end
     
     % Load in DESIGN MATRIX file
     dmTmp = readDM(dmName{r},nPreds);
