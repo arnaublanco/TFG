@@ -1,8 +1,10 @@
 % Function that reads a .txt file and returns what it contains.
+%  INPUT:
+%   · path: Path to DM file.
+%   · nReg: Number of regressors (number of columns).
+%  OUTPUT:
+%   · outFile: Vector with the content of the file
 function [outFile] = readDM(path, nReg)
-% INPUT:
-%   - path: Path to DM file.
-%   - nReg: Number of regressors (number of columns).
 
     fobj = fopen(path,'r'); % Open file
     file = textscan(fobj, repmat('%f',[1 nReg])); % Read formatted file

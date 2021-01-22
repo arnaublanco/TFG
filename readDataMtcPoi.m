@@ -1,14 +1,15 @@
-function [outD] = readDataMtcPoi(subject, Patch_ind, Hem, CondClass, POIfile_ind)
+% Function that loads the specified Mesh Timecourse with a specified mask
+% and hemisphere.
+%  INPUT:
+%   · subject: Subject number
+%   · Patch_ind: Patch within the POIs that will be used (1, 2, 3, ... or 16) 
+%   · Hem: 'LH' or 'RH'
+%   · CondClass: Conditions to classify
+%   · POIfile_ind: Index in POI file (1 -> Auditory, 2 -> Motor or 3 -> EVC) 
+%  OUTPUT:
+%   · outD: MATLAB object containing the data.
 
-% INPUT:
-    % subject: Subject number
-    % Patch_ind: Patch within the POIs that will be used (1, 2, 3, ... or 16) 
-    % Hem: 'LH' or 'RH'
-    % CondClass: Conditions to classify
-    % POIfile_ind: Index in POI file (1 -> Auditory, 2 -> Motor or 3 -> EVC)
-    
-% OUTPUT:
-    % outD: MATLAB object containing the data.
+function [outD] = readDataMtcPoi(subject, Patch_ind, Hem, CondClass, POIfile_ind)
 
 fileNames = getFileInfo(subject,Hem,CondClass,POIfile_ind);  % Import file for a given hemisphere, subject and task
 
@@ -121,7 +122,7 @@ for r = 1:nRuns
         f = [];
         for j = 1:size(seq,1)
             if strcmp(seq{j},CondClass{i}) 
-                f = [f j];
+                f = cat(2,f,j);
             end %% find where each cond is present (across trials)
         end
         if(length(f) == nPerRun)

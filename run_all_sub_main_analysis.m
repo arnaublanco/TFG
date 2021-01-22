@@ -1,4 +1,4 @@
-% Run the single SVM for all subjects
+% Run the single SVM for all subjests
 
 subjects = 8;
 CondClass = [{'forest'}, {'people'}, {'traffic'}]; % Conditions to classify: Forest, People and Traffic (1, 2 and 3)

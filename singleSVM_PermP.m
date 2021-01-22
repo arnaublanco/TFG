@@ -13,7 +13,7 @@ function [svmOut]=singleSVM_PermP(train_set,test_set,p, CondClass,permGP,inputRa
 
 % set permGP=0 for normal analysis, =1 for randomization of labels
 
-%addpath(genpath('/analyse/6/fMRI/Project8/SVM/libsvm-mat-2.86-1')); % SVM toolbox
+addpath('/Users/blancoarnau/Documents/MATLAB/libsvm/matlab/') % Import SVM toolbox
 
 % get betas and pars
 % betasC=outD.betasC;
@@ -89,10 +89,10 @@ for r=1:size(train_set,3)
 
     % ***single trial SVM prediction***
     
-    % put on -1 to 1 scale
-    [train, pars]=stretch_cols_ind(train, -1,1); 
+    % Set training set to -1 to 1 scale
+    [train, pars] = stretch_cols_ind(train, -1,1); 
     
-    % train svm model
+    % Train svm model
     svm_model=svmtrain(gp, train,'-t 0 -c 1');    %#ok<SVMTRAIN> % -t 0 = linear SVM, -c 1 = cost value of 1
     svm_mod{r}=svm_model;
     

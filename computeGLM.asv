@@ -1,0 +1,47 @@
+function [betas,t] = computeGLM(data, dm, zTimeSeries,zBetas)
+
+
+if(zTimeSeries==1)
+    data = zscore(data);  % Z-score data, voxel-wise (column wise), crucial 
+end
+
+nVox = size(data,2);
+nVols = size(data,1);
+betas = zeros(size(dm,2),nVox);
+t = zeros(size(betas));
+
+% Fit GLM independently for each voxel
+for vox = 1:nVox
+    [B,dev,stats] = glmfit(dm,data(:,vox),'normal','constant','off');
+    betas(:,vox) = B; % B: Betas from GLM (without b0, i.e. additional column of ones)
+    t(:,vox) = stats.t; % stats.t: t-tests of GLM
+end
+
+% Z-score betas within each voxel, across trials
+if(zBetas)
+    betas = zscore(betas);  % zscore betas, voxel-wise
+end
+
+
+% X=DM;
+% iXX=pinv(X'*X);
+% betas=zeros(size(iXX,1),nVox);
+% yhat=zeros(size(data));
+% res=zeros(size(data));
+% 
+% for vox=1:nVox
+%     
+%     Y=data(:,vox);  %% one voxel at a time
+%     
+%     betas(:,vox)=iXX*X'*Y;   %% the beta values
+%     yhat(:,vox)=(X*betas(:,vox));
+%     res(:,vox)=(Y-yhat(:,vox)).^2;
+%   %  ssqRes(vox)=sum(res(:,vox));
+%   %  ssqReg(vox)=sum((Y-mean(Y)).^2);
+% end
+% 
+% out=[];
+% out.data=data;
+% out.betas=betas;
+% out.yhat=yhat;
+% out.res=res;
