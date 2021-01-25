@@ -1,17 +1,21 @@
-%The analysis code that was used in: Vetter P., Bola L., Reich L., Bennett M., Muckli L., Amedi A. (2020). Decoding natural sounds in early “visual” cortex of congenitally blind individuals. Current Biology.
-%The code was originally created by Fraser W. Smith (see Smith & Muckli 2010 PNAS)and was adapted to this project by Petra Vetter and Lukasz Bola.
+% Function that computes SVM with a permutation analysis that uses always
+% the same randomization vector.
+%  INPUT:
+%   · train_set: Train set.
+%   · test_set: Test set.
+%   · p: Data info.
+%   · CondClass: Conditions to classify (stimuli).
+%   · permGP: Permutation type (0: normal analysis; 1: randomization of labels).
+%   · inputRandVec: Randomization vector.
+%  OUTPUT:
+%   · svmOut: MATLAB object containing the results of the SVM.
 
-function [svmOut]=singleSVM_PermP(train_set,test_set,p, CondClass,permGP,inputRandVec)
-
-%this is the version for the permutation analysis
-%uses always the same randomisation vector
+function [svmOut] = singleSVM_PermP(train_set, test_set, p, CondClass, permGP, inputRandVec)
 
 % to do single SVM analysis - once for whole of POI - no-subsampling
 % only use SVM since LDA will not compute (cov will be singular)
 % thus these results show --- method not dependent on voxel sub-sampling
 % for significance!!!!! 
-
-% set permGP=0 for normal analysis, =1 for randomization of labels
 
 addpath('/Users/blancoarnau/Documents/MATLAB/libsvm/matlab/') % Import SVM toolbox
 
@@ -19,150 +23,135 @@ addpath('/Users/blancoarnau/Documents/MATLAB/libsvm/matlab/') % Import SVM toolb
 % betasC=outD.betasC;
 % p=outD.S{3};  
 
-nTrials=p(1);
-nConditions=p(2);
-nPerRun=p(3);
-nVert=size(train_set,2);  %% always take updated value from betasC matrix
-nRuns=p(5);
+nTrials = p(1);
+nConditions = p(2);
+nPerRun = p(3);
+nVert = size(train_set,2);  % Always take updated value from betasC matrix
+nRuns = p(5);
 
-%CondClass=outD.S{5}.CondClass;   %% conditions to classify
+% CondClass=outD.S{5}.CondClass;   % Conditions to classify
 
-% parse for cross-validation cycles
-%[train_set, test_set, anovas]=parse_runs_surf(betasC);
+% Parse for cross-validation cycles
+% [train_set, test_set, anovas] = parse_runs_surf(betasC);
 
-
-% output variables
-svm_ws=cell(1,nRuns);
-svm_class=zeros(nPerRun*(nConditions),nRuns);
-svma_class=zeros(nConditions,nRuns);
-svm_cm=zeros(nConditions,nConditions,nRuns);
-svm_pc=zeros(nRuns,1);
-svm_av=zeros(nRuns,1);
-svm_mod=cell(1,nRuns);
+% Output variables
+svm_ws = cell(1,nRuns);
+svm_class = zeros(nPerRun*(nConditions),nRuns);
+svma_class = zeros(nConditions,nRuns);
+svm_cm = zeros(nConditions,nConditions,nRuns);
+svm_pc = zeros(nRuns,1);
+svm_av = zeros(nRuns,1);
+svm_mod = cell(1,nRuns);
    
-% main loop - over cross-validation cycles    
+% Main loop - Cross-validation cycles in every run  
 
-for r=1:size(train_set,3)  
+for r = 1:size(train_set,3)  
 
     % Define train and test for this cycle of cross-validation
-    train=train_set(:,:,r);  
-    test2=test_set(:,:,r);
+    train = train_set(:,:,r);  
+    test2 = test_set(:,:,r);
 
-    % coding variable for TRAINING - assumes leave one run out
-    % cross-validation
-    
-    gp=[]; k=1; l=nPerRun*(nRuns-1);
-    for ii=1:nConditions
-        gp(k:l,1)=ii;
-        k=k+nPerRun*(nRuns-1);
-        l=l+nPerRun*(nRuns-1);
+    % Define coding variable for training - assumes LOOCV (leave one run out)   
+    gp = []; k = 1; l = nPerRun*(nRuns-1);
+    for ii = 1:nConditions
+        gp(k:l,1) = ii;
+        k = k + nPerRun*(nRuns-1);
+        l = l + nPerRun*(nRuns-1);
     end
     
-    % allow for possibility to permute label vector
-    % this will allow the creation of a randomization distribution
-    % for good comparison purposes
-    if(permGP==1)
-        %f=randperm(length(gp));
-        %this creates a random vector anew everytime the script is run
-        %not good for group analysis, as here the randomisation vector must
-        %be the same across subjects
+    % Permutation of label vector - this will allow the creation of a randomization
+    % distribution for good comparison purposes.
+    if(permGP == 1)
+        % f = randperm(length(gp)); % Create a random vector everytime
+        % Not good for group analysis, as here the randomization vector must
+        % be the same across subjects
         
-         f=inputRandVec;
-         %take the (constant) randomisation vector from the input
-        gp=gp(f);
+        f = inputRandVec;
+        gp = gp(f); % Take the (constant) randomization vector from the input
     end
     
-    
-    if(size(train,1)~=size(gp,1))
+    if(size(train,1) ~= size(gp,1))
         error('Training and gp vector mismatch');
     end
 
-
-    % also run it on the average for each condition in test run
-    in=zeros(nConditions, size(test2,2));
-    k=1; l=nPerRun;
-    for i=1:nConditions
-        in(i,:)=mean(test2(k:l,:));
-        k=k+nPerRun; l=l+nPerRun;
+    % Run it on the average for each condition in test run
+    in = zeros(nConditions, size(test2,2));
+    k = 1; l = nPerRun;
+    for i = 1:nConditions
+        in(i,:) = mean(test2(k:l,:));
+        k = k + nPerRun; l = l + nPerRun;
     end
-
-
-    % ***single trial SVM prediction***
+    
+    %% *** Single-block SVM prediction ***
     
     % Set training set to -1 to 1 scale
-    [train, pars] = stretch_cols_ind(train, -1,1); 
+    [train, pars] = stretch_cols_ind(train, -1, 1); 
     
-    % Train svm model
-    svm_model=svmtrain(gp, train,'-t 0 -c 1');    %#ok<SVMTRAIN> % -t 0 = linear SVM, -c 1 = cost value of 1
-    svm_mod{r}=svm_model;
+    % Train SVM model
+    svm_model = svmtrain(gp, train, '-t 0 -c 1'); % -t 0 = linear SVM, -c 1 = cost value of 1
+    svm_mod{r} = svm_model;
     
-    % get the weights from model
-  %  svm_weights=svm_DefineWeights(svm_model);  
-  %  svm_ws{r}=svm_weights;
+    % Get the weights from model
+    svm_weights = svm_DefineWeights(svm_model);  
+    svm_ws{r} = svm_weights;
 
-    %% define test coding variable
-    gp_test=[]; k=1; l=nPerRun;
-    for ii=1:nConditions
-        gp_test(k:l,1)=ii;
-        k=k+nPerRun;
-        l=l+nPerRun;
+    % Define test coding variable
+    gp_test = []; k = 1; l = nPerRun;
+    for ii = 1:nConditions
+        gp_test(k:l,1) = ii;
+        k = k + nPerRun;
+        l = l + nPerRun;
     end
 
-    % test svm model
-    %[test2, pars]=stretch_cols_ind(test2, -1,1);
-    [test2]=stretchWithGivenPars(test2,[-1 1],pars);  %% put on same scale
-    %this scales the data in each voxel so that the minimum value is set to -1
-    %and the maximum value is set to +1.
+    %% ** Test SVM model **
+    % Set test set to -1 to 1 scale
+    [test2] = stretchWithGivenPars(test2, [-1 1], pars);
+    % [test2, pars]=stretch_cols_ind(test2, -1,1);
 
-    [svm_class(:,r),accuracy,dec]=svmpredict(gp_test,test2,svm_model);
+    [svm_class(:,r), accuracy, dec] = svmpredict(gp_test, test2, svm_model);
 
-    
-    % compute performance on test runs
-    f=zeros(nConditions);  %% confusion matrix 
+    % Compute performance on test runs
+    f = zeros(nConditions);  % Confusion matrix 
 
-    k=1; l=nPerRun;
-    for i=1:nConditions
-        for j=1:nConditions
-            f(i,j)=length(find(svm_class(k:l,r)==j));
+    k = 1; l = nPerRun;
+    for i = 1:nConditions
+        for j = 1:nConditions
+            f(i,j) = length(find(svm_class(k:l,r)==j));
         end
-        k=k+nPerRun; l=l+nPerRun;
+        k = k + nPerRun; l = l + nPerRun;
     end
 
-    svm_cm(:,:,r)=f;
-    svm_pc(r)=trace(f)/(nPerRun*(nConditions));  
+    svm_cm(:,:,r) = f;
+    svm_pc(r) = trace(f)/(nPerRun*(nConditions));  
 
-
-    %% **Test SVM Prediction of Condition Average in Test Run**
-    [in]=stretchWithGivenPars(in,[-1 1],pars);  %% put on same scale
+    %% ** Test SVM Prediction of Condition Average in Test Run **
+    
+    [in] = stretchWithGivenPars(in, [-1 1], pars);  % Set on same scale
     CondClass = 1:3;
-    [svma_class(:,r),accuracy,dec]=svmpredict(CondClass',in,svm_model);
+    [svma_class(:,r), accuracy, dec] = svmpredict(CondClass',in,svm_model);
 
-    svm_av(r)=length(find(svma_class(:,r)==CondClass')) ./ (nConditions);
+    svm_av(r) = length(find(svma_class(:,r) == CondClass')) ./ (nConditions);
 
+end
+% End cross-validation loop
 
-end   %% end cross-validation loop (runs)
-
-
-% format to output nicely
-data{1}=train_set;
-data{2}=test_set;
+% Proper output format
+data{1} = train_set;
+data{2} = test_set;
 %data{3}=anovas;
 
-svmOut=[];
-svmOut.models=svm_mod;    %% the SVM model for each cross-validation fold
-svmOut.ws=svm_ws;         %% weights for each binary classification pbm
-svmOut.class=svm_class;   %% single trial/block classifications
-svmOut.Aclass=svma_class; %% average classification
-svmOut.cm=svm_cm;         %% confusion matrices for single trial/block classifications
-svmOut.pc=svm_pc;         %% percentage correct single trial/block
-svmOut.av=svm_av;         %% percentage correct average
-svmOut.data=data;         %% parsed data used in classifier
-
+svmOut = [];
+svmOut.models = svm_mod;    % SVM model for each cross-validation fold
+svmOut.ws = svm_ws;         % Weights for each binary classification pbm
+svmOut.class = svm_class;   % Single-block classifications
+svmOut.Aclass = svma_class; % Average classification
+svmOut.cm = svm_cm;         % Confusion matrices for single block classifications
+svmOut.pc = svm_pc;         % Percentage correct single trial/block
+svmOut.av = svm_av;         % Percentage correct average
+svmOut.data = data;         % Parsed data used in classifier
 
 % t test on performance across runs, within subject
 %[h,p,ci,stats]=ttest(svmOut.pc,1/nConditions,.05,'right');
-
-
 
 % t=[];
 % p=[];

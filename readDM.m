@@ -4,6 +4,7 @@
 %   · nReg: Number of regressors (number of columns).
 %  OUTPUT:
 %   · outFile: Vector with the content of the file
+
 function [outFile] = readDM(path, nReg)
 
     fobj = fopen(path,'r'); % Open file

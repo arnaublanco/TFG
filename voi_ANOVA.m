@@ -18,8 +18,7 @@ res = zeros(mSize+1,2); % One extra row for ANOVA on mean betas
 
 % Compute one-way ANOVA per voxel
 for i = 1:mSize
-    % ´anova1´: It returns p-value and ANOVA table.
-    [res(i,1), anovatab] = anova1(data(:,i),gp,'off'); % Compute ANOVA
+    [res(i,1), anovatab] = anova1(data(:,i),gp,'off'); % Compute ANOVA (´anova1´: Returns p-value and ANOVA table)
     res(i,2) = anovatab{2,5}; % F-test statistic
 end
 

@@ -23,20 +23,20 @@ permGP = 1; % 0: Standard analysis; 1: Permutation analysis
 [outDR] = readDataMtcPoi(subject, Patch_ind, 'RH', CondClass, POIfile_ind); % Right hemisphere
 
 % Concatenate across vertice dimension - hemispheres
-outD = []; % Define empty variable outD
+outD = [];               % Define empty variable outD
 f1 = size(outDL.betasC); % Size of matrix of betas from left hemisphere
 f2 = size(outDR.betasC); % Size of matrix of betas from right hemisphere
 
 % Check that dimensions match
 if(f1(1) == f2(1) && f1(3) == f2(3) && f1(4) == f2(4))
-    betasC = cat(2,outDL.betasC,outDR.betasC); % Concatenate betas matrices (left and right hemispheres)
-    S{3} = outDL.S{3}; % Permutation labels
-    S{3}(4) = f1(2)+f2(2); % Sum of dimensions of both hemispheres 
-    f = []; % Initialize f
-    f.CondClass = CondClass; % Add conditions
-    S{5} = f; % Save struct with conditions in S
-    outD.betasC = betasC; % Save betas (condition-wise) in outD
-    outD.S = S; % Save S in outD
+    betasC = cat(2,outDL.betasC,outDR.betasC);  % Concatenate betas matrices (left and right hemispheres)
+    S{3} = outDL.S{3};                          % Permutation labels
+    S{3}(4) = f1(2)+f2(2);                      % Sum of dimensions of both hemispheres 
+    f = [];                                     % Initialize f
+    f.CondClass = CondClass;                    % Add conditions
+    S{5} = f;                                   % Save struct with conditions in S
+    outD.betasC = betasC;                       % Save betas (condition-wise) in outD
+    outD.S = S;                                 % Save S in outD
     
 else
     error('Hemispheric Data mismatch');
@@ -68,8 +68,8 @@ tic % Start a stopwatch timer
 % ´parfor´: Executes for loop in parallel with other processes %
 nPermutations = 1000;
 parfor (i = 1:nPermutations)
-    %randVec=inputRandVec(:,i);
-    [svmOutPerm] = singleSVM_PermP(train_set,test_set,p, CondClass, permGP,inputRandVec(:,i));
+    % randVec = inputRandVec(:,i);
+    [svmOutPerm] = singleSVM_PermP(train_set, test_set, p, CondClass, permGP,inputRandVec(:,i));
     Spc(i) = mean(svmOutPerm.pc);
     Apc(i) = mean(svmOutPerm.av);
 end
@@ -78,7 +78,7 @@ toc  % Elapsed for time for 1000 permutations in parallel
 
 % Perform classification for real data %
 permGP = 0;
-[svmOutObs] = singleSVMP(betasC,p,CondClass,permGP);
+[svmOutObs] = singleSVMP(betasC, p, CondClass, permGP);
 Obs_Spc = mean(svmOutObs.pc);
 Obs_Apc = mean(svmOutObs.av);
 

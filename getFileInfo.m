@@ -1,32 +1,29 @@
-function [input_file_info] = getFileInfo(subject, Hem, CondClass, POIfile_ind)
+% Function that returns returns data information of the asked file.
+%  INPUT:
+%   · subject: Subject number
+%   · Hem: 'LH' or 'RH'
+%   · CondClass: Conditions to classify
+%   · POIfile_ind: Index in POI file (1 -> Auditory, 2 -> Motor or 3 -> EVC)
+%  OUTPUT:
+%   · input_file_info: MATLAB object containing the data info.
 
-% INPUT:
-    % subject: Subject number
-    % Hem: 'LH' or 'RH'
-    % CondClass: Conditions to classify
-    % POIfile_ind: Index in POI file (1 -> Auditory, 2 -> Motor or 3 -> EVC)
-    
-% OUTPUT:
-    % input_file_info: MATLAB object containing the data info.
+function [input_file_info] = getFileInfo(subject, Hem, CondClass, POIfile_ind)
 
 dir_name = '/Users/blancoarnau/Google Drive/TFG Arnau Blanco/code/output/'; % Path to the files
 dir_rois = '/Users/blancoarnau/Google Drive/TFG Arnau Blanco/code/ROIs/'; % Path to the ROIs/POIs
-    
-%%% Important parameters
 
 % Less volumes are selected because there's a glitch at the beginning of the signal.
 if subject == 1
-   nVols = 113;
+   nVols = 113; % The first subject underwent a shorter version of the experiment 
 else
     nVols = 218;
 end
-nPreds = 18+1;  %% number of stimulation blocks plus 1 for baseline 
-%CondClass=1:3; %% the conditions to classify, their codes in txt file
-nTrials = 18;   %number of stimulation blocks (without baseline) per run
-nPerRun = 6;    %% number of blocks per condition per run
-nRuns = 4;
 
-% !! The first subject underwent a short version of the experiment 
+nPreds = 18+1;  % Number of stimulation blocks (plus 1 for baseline) 
+%CondClass=1:3; % Conditions to classify, their codes in txt file
+nTrials = 18;   % Number of stimulation blocks (without baseline) per run
+nPerRun = 6;    % Number of blocks per condition per run
+nRuns = 4;      % Runs per subject
 
 func_name = cell(1,nRuns);
 dm_block = cell(1,nRuns);
@@ -52,8 +49,7 @@ for run = 1:nRuns
     % File that maps single trials or blocks onto experimental conditions.
     cond_locs_name{run} = dir_name + s + "/" + s + "_ses-mri_task-AVScenes" + w + "_run-0" + run + "_events.tsv"; % EL_run1_AVScenesBlind_trialseq.txt
     
-    % Directories for the design matrices (single block-wise and
-    % condition-wise)
+    % Directories for the design matrices (single block-wise and condition-wise)
     dir_dm_b = dir_name + s + "/" + s + "_ses-mri_task-AVScenes" + w + "_run-0" + run + '_block.txt';
     dir_dm_c = dir_name + s + "/" + s + "_ses-mri_task-AVScenes" + w + "_run-0" + run + '_cond.txt';
     
@@ -76,19 +72,19 @@ for run = 1:nRuns
     
 end
 
-%%% MATLAB object definition
+% MATLAB object definition
 input_file_info.dir_name = dir_name + s + "/";
 input_file_info.poi_name = poi_name;
 input_file_info.func_name = func_name;
-input_file_info.dm_name = dm_block;    % Block or trial wise
-input_file_info.dm2 = dm_cond;         % Condition wise
+input_file_info.dm_name = dm_block;    % Block-wise
+input_file_info.dm2 = dm_cond;         % Condition-wise
 input_file_info.CondClass = CondClass;
 input_file_info.subject = subject;
 input_file_info.cond_locs = cond_locs_name;
-%input_file_info.Hem = Hem;
+% input_file_info.Hem = Hem;
 
 pars(1) = nVols;
-pars(2) = nPreds;  %% remember to add 1 for the constant column
+pars(2) = nPreds;  % Remember to add 1 for the constant column
 pars(3) = nTrials;
 pars(4) = nPerRun;
 
