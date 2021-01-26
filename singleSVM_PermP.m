@@ -106,7 +106,7 @@ for r = 1:size(train_set,3)
     %% ** Test SVM model **
     % Set test set to -1 to 1 scale
     [test2] = stretchWithGivenPars(test2, [-1 1], pars);
-    % [test2, pars]=stretch_cols_ind(test2, -1,1);
+    % [test2, pars] = stretch_cols_ind(test2, -1, 1);
 
     [svm_class(:,r), accuracy, dec] = svmpredict(gp_test, test2, svm_model);
 
@@ -128,7 +128,7 @@ for r = 1:size(train_set,3)
     
     [in] = stretchWithGivenPars(in, [-1 1], pars);  % Set on same scale
     CondClass = 1:3;
-    [svma_class(:,r), accuracy, dec] = svmpredict(CondClass',in,svm_model);
+    [svma_class(:,r), accuracy, dec] = svmpredict(CondClass', in, svm_model);
 
     svm_av(r) = length(find(svma_class(:,r) == CondClass')) ./ (nConditions);
 
@@ -159,20 +159,20 @@ svmOut.data = data;         % Parsed data used in classifier
 % if(marker==1 || marker==2)
 %         
 %     % single block
-%     m=mean(svm_pc);  %% one mean per subject
-%     t=(mean(m)-1/3)./(std(m)./sqrt(length(m)));
+%     m = mean(svm_pc);  %% one mean per subject
+%     t = (mean(m)-1/3)./(std(m)./sqrt(length(m)));
 % 
-%     df=length(m)-1;
-%     p=1-tcdf(t,df);  %% one tailed p for m>1/3
+%     df = length(m)-1;
+%     p = 1-tcdf(t,df);  %% one tailed p for m>1/3
 % 
 %     % average
-%     m=mean(svm_av);  %% one mean per subject
-%     t(2)=(mean(m)-1/3)./(std(m)./sqrt(length(m)));
+%     m = mean(svm_av);  %% one mean per subject
+%     t(2) = (mean(m)-1/3)./(std(m)./sqrt(length(m)));
 % 
-%     df=length(m)-1;
-%     p(2)=1-tcdf(t(2),df);
+%     df = length(m)-1;
+%     p(2) = 1 - tcdf(t(2),df);
 %     
-% elseif(marker==3)
+% elseif(marker == 3)
 %     
 %     % single block
 %     for r=1:2
