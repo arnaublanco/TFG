@@ -6,10 +6,14 @@
 %   · Hem: 'LH' or 'RH'
 %   · CondClass: Conditions to classify
 %   · POIfile_ind: Index in POI file (1 -> Auditory, 2 -> Motor or 3 -> EVC) 
+%   · visualize: Visualization of files when equal to 1.
 %  OUTPUT:
 %   · outD: MATLAB object containing the data.
 
-function [outD] = readDataMtcPoi(subject, Patch_ind, Hem, CondClass, POIfile_ind)
+function [outD] = readDataMtcPoi(subject, Patch_ind, Hem, CondClass, POIfile_ind, visualize)
+
+addpath(genpath('/Users/blancoarnau/Documents/GitHub/gifti')) % Add GifTI library to import files
+addpath(genpath('/Applications/freesurfer/matlab'));
 
 fileNames = getFileInfo(subject, Hem, CondClass, POIfile_ind);  % Import file for a given hemisphere, subject and task
 
@@ -21,6 +25,7 @@ zTimeSeries = 1;      % If zTimeSeries = 1, then the data is z-scored
 dirName = fileNames.dir_name;
 poiName = fileNames.poi_name;
 funcName = fileNames.func_name;
+anatName = fileNames.anat_name;
 dmName = fileNames.dm_name;
 condLocs = fileNames.cond_locs;
 p = fileNames.pars;  % nClass and nVols
@@ -36,27 +41,21 @@ CondClass = fileNames.CondClass;
 nConditions = length(CondClass);
 
 % Load POI file
-locsV = [];
 if(POIfile_ind ~= 3)
-    locsV = niftiread(poiName);       
-    %they have used ´unique´ here, which returns the same array without repetitions
+    [l] = read_label('',poiName); % Read .label file
+    locsV = l(:,1) + 1; % Save vertices in locsV (plus one because in MATLAB indices start at 1)
 else
     if(exist('Patch_ind', 'var'))
-        locsV = niftiread(poiName); % this will be modified later - i want the mask to have 1s', 2s', 3s' etc
+        [l] = read_label('',poiName{Patch_ind}); % Read .label file
+        locsV = l(:,1)+1; % Save vertices in locsV - this will be modified later - i want the mask to have 1s', 2s', 3s' etc
         %locsV = niftiread(find(poiName == Patch_ind));
     end
 end
 
-if(Hem == 'LH')
-    locsV = locsV(1:floor(size(locsV,1)/2),:,:);
-else
-    locsV = locsV(ceil(size(locsV,1)/2):end,:,:);
-end
-
-nVox = sum(locsV,'all');
-funcData = zeros(nVols,nVox,nRuns);
+nVert = length(locsV);
+funcData = zeros(nVols,nVert,nRuns);
 DM = zeros(nVols,nPreds,nRuns);
-betas = zeros(nPreds - 1,nVox,nRuns);  % Minus one because of mean confound
+betas = zeros(nPreds - 1,nVert,nRuns);  % Minus one because of mean confound
 tvals = zeros(size(betas));
 
 % In the following, a GLM is run for each run with the design matrix of each run.
@@ -69,16 +68,33 @@ tvals = zeros(size(betas));
 for r = 1:nRuns
 
     % Load Functional data
-    main = niftiread(funcName{r});
+    main = gifti(convertStringsToChars(funcName{r})); % NOTE: Gifti does not work with strings -> conversion to characters
     
-    idx = find(repmat(locsV,[1 1 1 nVols])); % Find indices where there's a 1.
-    main_masked = main(:,:,:,end-nVols+1:end); % Crop functional data with nVols
-    
-    funcData(:,:,r) = reshape(main_masked(idx),[nVox nVols])';  % Get timecourses from POI file
+    main_masked = main.cdata(locsV,end-nVols+1:end); % Crop functional data with nVols and get vertices within POI    
+    funcData(:,:,r) = main_masked';  % Save functional data
 
-    %if(~isempty(find(funcData(:,:,r)==0)))
-    %    error('Zeros in Functional data: requires further thought!');
-    %end
+%     if(~isempty(find(funcData(:,:,r)==0)))
+%         error('Zeros in Functional data: requires further thought!');
+%     end
+
+    % Visualize surfaces if set to 1
+    close all;
+    if visualize == 1
+        anat = gifti(convertStringsToChars(anatName)); % Load anatomical file
+        bold_masked = main; % Copy functional file to ´bold_masked´
+        bold_masked.cdata(:,:) = 0; % Set all the vertices to 0
+        bold_masked.cdata(locsV,1) = 1; % Set the vertices in the ROI to 1
+        
+        figure;
+        plot(anat,main); colorbar; % Show functional file at t = 0
+        title("Subject " + string(subject) + " - Run " + string(r) + " - " + Hem);
+        
+        figure;
+        plot(anat,bold_masked); % Show mask
+        title('Mask ' + string(POIfile_ind) + " - " + Hem);
+        
+        pause(5); % Pause for 5 seconds
+    end
     
     % Load in design matrix file
     dmTmp = readDM(dmName{r},nPreds);
@@ -105,8 +121,8 @@ end
 % Load sequence (condition data)
 nTrials = size(betas,1);
 %nPerRun = 6;
-betasC = zeros(nPerRun,nVox,nConditions,nRuns);  % Betas split by condition
-tvalsC = zeros(nPerRun,nVox,nConditions,nRuns);
+betasC = zeros(nPerRun,nVert,nConditions,nRuns);  % Betas split by condition
+tvalsC = zeros(nPerRun,nVert,nConditions,nRuns);
 
 for r = 1:nRuns
     
@@ -138,7 +154,7 @@ end
 p(1) = nTrials;
 p(2) = nConditions;
 p(3) = nPerRun;
-p(4) = nVox;  
+p(4) = nVert;  
 p(5) = nRuns;
 p(6) = nVols;
 

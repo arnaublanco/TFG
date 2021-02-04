@@ -1,4 +1,4 @@
-function run_single_sub_CollapseHem_main_analysis_parallel(subject,Patch_ind,CondClass,POIfile_ind)
+function run_single_sub_CollapseHem_main_analysis_parallel(subject,Patch_ind,CondClass,POIfile_ind,visualize)
 
 %%% Script for permutation analysis
 % subject = 'CGY09';
@@ -19,8 +19,8 @@ tic % Start a stopwatch timer.
 permGP = 1; % 0: Standard analysis; 1: Permutation analysis
 
 % Prepare data - get timeseries, do GLM etc
-[outDL] = readDataMtcPoi(subject, Patch_ind, 'LH', CondClass, POIfile_ind); % Left hemisphere
-[outDR] = readDataMtcPoi(subject, Patch_ind, 'RH', CondClass, POIfile_ind); % Right hemisphere
+[outDL] = readDataMtcPoi(subject, Patch_ind, 'LH', CondClass, POIfile_ind, visualize); % Left hemisphere
+[outDR] = readDataMtcPoi(subject, Patch_ind, 'RH', CondClass, POIfile_ind, visualize); % Right hemisphere
 
 % Concatenate across vertice dimension - hemispheres
 outD = [];               % Define empty variable outD
