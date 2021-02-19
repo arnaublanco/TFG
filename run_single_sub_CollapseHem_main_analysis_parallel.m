@@ -29,13 +29,15 @@ f2 = size(outDR.betasC); % Size of matrix of betas from right hemisphere
 
 % Check that dimensions match
 if(f1(1) == f2(1) && f1(3) == f2(3) && f1(4) == f2(4))
-    betasC = cat(2,outDL.betasC,outDR.betasC);  % Concatenate betas matrices (left and right hemispheres)
+    betasC = cat(2,outDL.betasC,outDR.betasC);  % Concatenate condition-wise betas matrices (left and right hemispheres)
+    betas = cat(2,outDL.betas,outDR.betas);     % Concatenate block-wise betas matrices (left and right hemisphere)
     S{3} = outDL.S{3};                          % Permutation labels
     S{3}(4) = f1(2)+f2(2);                      % Sum of dimensions of both hemispheres 
     f = [];                                     % Initialize f
     f.CondClass = CondClass;                    % Add conditions
     S{5} = f;                                   % Save struct with conditions in S
     outD.betasC = betasC;                       % Save betas (condition-wise) in outD
+    outD.betas = betas;                         % Save betas (block-wise) in outD
     outD.S = S;                                 % Save S in outD
     
 else

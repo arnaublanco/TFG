@@ -11,11 +11,11 @@ run run_all_sub_main_analysis.m
 
 % Get averaged, across cross-classification folds, accuracy for each
 % subject and ROI
-%run single_sub_meanClassAccu.m
+run single_sub_meanClassAccu.m
 
 % Compare actual classification accuracies with random permutations and get
 % p-values
-%run groupAnalysis_Perm.m
+run groupAnalysis_Perm.m
 
 % Correct general analyses using single threshold test
 % Two separate corrections are calculated - one for EVC, auditory cortex

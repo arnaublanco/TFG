@@ -1,0 +1,13 @@
+close all;
+clear all;
+
+load betasC.mat
+
+betas = zeros(size(betasC,1)*size(betasC,2)*size(betasC,4),3);
+for c = 1:3
+    betas(:,c) = reshape(betasC(:,:,c,:),[1 size(betasC,1)*size(betasC,2)*size(betasC,4)]);
+end
+coeff = pca(betas');
+
+figure;
+scatter(coeff(:,1),coeff(:,2))

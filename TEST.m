@@ -1,8 +1,11 @@
 close all;
 clear all;
 
-addpath(genpath('/Applications/freesurfer/matlab'));
-path = '/Users/blancoarnau/Documents/freesurfer/sub-01/mri/brain.mgz';
-c = MRIread(path);
-volume = c.vol;
-volshow(volume);
+load betas.mat
+load betasC.mat
+
+betas = reshape(betas,[size(betas,1) size(betas,2)*size(betas,3)]);
+coeff = pca(betas);
+
+figure;
+scatter3(coeff(:,1),coeff(:,2),coeff(:,3))

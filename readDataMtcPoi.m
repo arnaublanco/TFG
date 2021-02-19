@@ -41,15 +41,19 @@ CondClass = fileNames.CondClass;
 nConditions = length(CondClass);
 
 % Load POI file
-if(POIfile_ind ~= 3)
+if(POIfile_ind == 1)
+    [~, label, ~] = read_annotation(poiName); % Read .annot file
+    locsV = find(label == 3947741) + 1; % Tranverse temporal gyrus has label 3947741
+elseif(POIfile_ind == 2)
     [l] = read_label('',poiName); % Read .label file
     locsV = l(:,1) + 1; % Save vertices in locsV (plus one because in MATLAB indices start at 1)
-else
+elseif(POIfile_ind == 3)
     if(exist('Patch_ind', 'var'))
         [l] = read_label('',poiName{Patch_ind}); % Read .label file
-        locsV = l(:,1)+1; % Save vertices in locsV - this will be modified later - i want the mask to have 1s', 2s', 3s' etc
-        %locsV = niftiread(find(poiName == Patch_ind));
+        locsV = l(:,1) + 1; % Save vertices in locsV - this will be modified later - i want the mask to have 1s', 2s', 3s' etc
     end
+else
+    error('POIfile_ind is incorrect');
 end
 
 nVert = length(locsV);
@@ -70,12 +74,26 @@ for r = 1:nRuns
     % Load Functional data
     main = gifti(convertStringsToChars(funcName{r})); % NOTE: Gifti does not work with strings -> conversion to characters
     
-    main_masked = main.cdata(locsV,end-nVols+1:end); % Crop functional data with nVols and get vertices within POI    
+    main_masked = main.cdata(locsV,end-nVols+1:end); % Crop functional data with nVols and get vertices within POI
+    
+    % If run 1, remove 0's in the data and reshape funcData
+    if r == 1
+        [u,~] = find(main_masked == 0);
+        main_masked(u,:) = [];
+        
+        nVert = size(main_masked,1);
+        funcData = zeros(nVols,nVert,nRuns);
+        betas = zeros(nPreds - 1,nVert,nRuns);
+        tvals = zeros(size(betas));
+    else % If run ~1, remove 0's in u positions
+        main_masked(u,:) = [];  
+    end
+    
     funcData(:,:,r) = main_masked';  % Save functional data
 
-%     if(~isempty(find(funcData(:,:,r)==0)))
-%         error('Zeros in Functional data: requires further thought!');
-%     end
+    if(~isempty(find(funcData(:,:,r)==0)))
+        error('Zeros in Functional data: requires further thought!');
+    end
 
     % Visualize surfaces if set to 1
     close all;

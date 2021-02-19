@@ -70,9 +70,9 @@ for run = 1:nRuns
     
     % POI: Patch-of-Interest (or ROI: Region-of-Interest)
     if POIfile_ind == 1 % (to change laterrr!!!!!)
-        poi_name = dir_rois + s + '/label/' + lower(Hem) + '.BA1_exvivo.label'; % Auditory (I'M GONNA USE BA1 BUT I HAVE TO CHANGE THIS LATER!!)
+        poi_name = dir_rois + s + '/label/' + lower(Hem) + '.aparc.a2009s.annot'; % Auditory (tranverse temporal Gyrus -> Destrieux atlas)
     elseif POIfile_ind == 2
-        poi_name = dir_rois + s + '/label/' + lower(Hem) + '.BA4a_exvivo.label'; % Motor (primary motor area)
+        poi_name = dir_rois + s + '/label/' + lower(Hem) + '.BA4a_exvivo.label'; % Motor (primary motor area -> Brodmann area 4)
     else
         poi_name = [{dir_rois + s + '/label/' + lower(Hem) + '.V1_exvivo.label'},{dir_rois + s + '/label/' + lower(Hem) + '.V2_exvivo.label'}]; % Visual (V1 and V2)
     end
