@@ -59,7 +59,7 @@ for r = 1:size(train_set,3)
     % Permutation of label vector - this will allow the creation of a randomization
     % distribution for good comparison purposes.
     if(permGP == 1)
-        f = randperm(length(gp));
+        f = randperm(length(gp)); % Create a random vector every time
         gp = gp(f);
     end
     
@@ -83,6 +83,8 @@ for r = 1:size(train_set,3)
     [train, pars] = stretch_cols_ind(train, -1, 1); 
     
     % Train SVM model
+    [~,v] = find(isnan(train)); % Find NaNs in train set
+    train(:,v) = []; % Remove NaNs from train set
     svm_model = svmtrain(gp, train, '-t 0 -c 1'); % -t 0 = linear SVM, -c 1 = cost value of 1
     svm_mod{r} = svm_model;
     
@@ -103,7 +105,9 @@ for r = 1:size(train_set,3)
     % Set train set to -1 to 1 scale
     [test2] = stretchWithGivenPars(test2, [-1 1], pars);
     % [test2, pars] = stretch_cols_ind(test2, -1, 1);
-
+    
+    [~,v] = find(isnan(test2)); % Find NaNs in test set
+    test2(:,v) = []; % Remove NaNs from test set
     [svm_class(:,r), accuracy, dec] = svmpredict(gp_test, test2, svm_model);
     
     % Compute performance on testing runs

@@ -21,7 +21,6 @@ else
 end
 
 nPreds = 18+1;  % Number of stimulation blocks (plus 1 for baseline) 
-%CondClass=1:3; % Conditions to classify, their codes in txt file
 nTrials = 18;   % Number of stimulation blocks (without baseline) per run
 nPerRun = 6;    % Number of blocks per condition per run
 nRuns = 4;      % Runs per subject

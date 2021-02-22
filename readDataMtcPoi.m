@@ -41,6 +41,7 @@ CondClass = fileNames.CondClass;
 nConditions = length(CondClass);
 
 % Load POI file
+disp('(' + string(Hem) + ') Loading ROIs...');
 if(POIfile_ind == 1)
     [~, label, ~] = read_annotation(poiName); % Read .annot file
     locsV = find(label == 3947741) + 1; % Tranverse temporal gyrus has label 3947741
@@ -69,6 +70,7 @@ tvals = zeros(size(betas));
 % a multivariate pattern of betas across voxels (space) but not across time.
 
 % Main loop (across runs)
+disp('Loading fMRI scans...');
 for r = 1:nRuns
 
     % Load Functional data
@@ -126,6 +128,7 @@ for r = 1:nRuns
     
     % GLM performed single-block, not deconvolved (can't be)
     % The timeseries are z-scored before running GLM in order to obtain comparable values to output
+    disp('Computing betas for run '+string(r)+'...');
     [out,out2] = computeGLM(funcData(:,:,r), DM(:,:,r), zTimeSeries,zBetas);
 
     betas(:,:,r) = out(1:nPreds-1,:);  % Remove last beta, mean confound
@@ -138,7 +141,6 @@ end
 
 % Load sequence (condition data)
 nTrials = size(betas,1);
-%nPerRun = 6;
 betasC = zeros(nPerRun,nVert,nConditions,nRuns);  % Betas split by condition
 tvalsC = zeros(nPerRun,nVert,nConditions,nRuns);
 

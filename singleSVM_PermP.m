@@ -17,22 +17,13 @@ function [svmOut] = singleSVM_PermP(train_set, test_set, p, CondClass, permGP, i
 % thus these results show --- method not dependent on voxel sub-sampling
 % for significance!!!!! 
 
-addpath('/Users/blancoarnau/Documents/MATLAB/libsvm/matlab/') % Import SVM toolbox
-
-% get betas and pars
-% betasC=outD.betasC;
-% p=outD.S{3};  
+addpath('/Users/blancoarnau/Documents/MATLAB/libsvm/matlab/') % Import SVM toolbox 
 
 nTrials = p(1);
 nConditions = p(2);
 nPerRun = p(3);
 nVert = size(train_set,2);  % Always take updated value from betasC matrix
 nRuns = p(5);
-
-% CondClass=outD.S{5}.CondClass;   % Conditions to classify
-
-% Parse for cross-validation cycles
-% [train_set, test_set, anovas] = parse_runs_surf(betasC);
 
 % Output variables
 svm_ws = cell(1,nRuns);
@@ -62,10 +53,8 @@ for r = 1:size(train_set,3)
     % Permutation of label vector - this will allow the creation of a randomization
     % distribution for good comparison purposes.
     if(permGP == 1)
-        % f = randperm(length(gp)); % Create a random vector everytime
         % Not good for group analysis, as here the randomization vector must
         % be the same across subjects
-        
         f = inputRandVec;
         gp = gp(f); % Take the (constant) randomization vector from the input
     end
@@ -88,6 +77,8 @@ for r = 1:size(train_set,3)
     [train, pars] = stretch_cols_ind(train, -1, 1); 
     
     % Train SVM model
+    [~,v] = find(isnan(train)); % Find NaNs in train set
+    train(:,v) = []; % Remove NaNs from train set
     svm_model = svmtrain(gp, train, '-t 0 -c 1'); % -t 0 = linear SVM, -c 1 = cost value of 1
     svm_mod{r} = svm_model;
     
@@ -107,7 +98,9 @@ for r = 1:size(train_set,3)
     % Set test set to -1 to 1 scale
     [test2] = stretchWithGivenPars(test2, [-1 1], pars);
     % [test2, pars] = stretch_cols_ind(test2, -1, 1);
-
+    
+    [~,v] = find(isnan(test2)); % Find NaNs in test set
+    test2(:,v) = []; % Remove NaNs from test set
     [svm_class(:,r), accuracy, dec] = svmpredict(gp_test, test2, svm_model);
 
     % Compute performance on test runs
@@ -129,7 +122,7 @@ for r = 1:size(train_set,3)
     [in] = stretchWithGivenPars(in, [-1 1], pars);  % Set on same scale
     CondClass = 1:3;
     [svma_class(:,r), accuracy, dec] = svmpredict(CondClass', in, svm_model);
-
+    accuracy(isnan(accuracy)) = 0; % If accuracy is NaN, set to 0
     svm_av(r) = length(find(svma_class(:,r) == CondClass')) ./ (nConditions);
 
 end
@@ -138,7 +131,6 @@ end
 % Proper output format
 data{1} = train_set;
 data{2} = test_set;
-%data{3}=anovas;
 
 svmOut = [];
 svmOut.models = svm_mod;    % SVM model for each cross-validation fold
@@ -150,8 +142,8 @@ svmOut.pc = svm_pc;         % Percentage correct single trial/block
 svmOut.av = svm_av;         % Percentage correct average
 svmOut.data = data;         % Parsed data used in classifier
 
-% t test on performance across runs, within subject
-%[h,p,ci,stats]=ttest(svmOut.pc,1/nConditions,.05,'right');
+% t-test on performance across runs, within subject
+[h,p,ci,stats]= ttest(svmOut.pc,1/nConditions,.05,'right');
 
 % t=[];
 % p=[];

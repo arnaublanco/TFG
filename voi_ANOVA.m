@@ -9,10 +9,6 @@
 
 function [res] = voi_ANOVA(data, gp)
 
-% to be called from "read_SingleTrial_glm"
-
-%p=s{3};
-%mSize=p(4);
 mSize = size(data,2);
 res = zeros(mSize+1,2); % One extra row for ANOVA on mean betas
 

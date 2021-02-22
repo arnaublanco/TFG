@@ -8,7 +8,7 @@ C = readtsv(dir_file);
 % The first participant went through a shorter version of the experiment.
 if subj == 1
     timepoints = 117;
-    C{2}(end) = 9;
+    C{2}(end) = 12; % Correcting last cell, which should be 12
 else
     timepoints = 222;
 end

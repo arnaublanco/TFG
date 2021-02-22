@@ -41,7 +41,7 @@ for subject_nr = 1: length(subjects)
     end
 end
 
-
+% I NEED TO CHANGE ALL THE PERIPHERY, FOVEA, FAR PERIPHERY POIs
 save('pooledPermResults','pooledApc_Poi3','pooledSpc_Poi3','pooledApc_Poi2','pooledSpc_Poi2','pooledApc_Poi1','pooledSpc_Poi1');
 meanApc.Auditory = mean(pooledApc_Poi1(1).permAcc,2);
 meanApc.Motor = mean(pooledApc_Poi2(1).permAcc,2);
