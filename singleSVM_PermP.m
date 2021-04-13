@@ -17,8 +17,6 @@ function [svmOut] = singleSVM_PermP(train_set, test_set, p, CondClass, permGP, i
 % thus these results show --- method not dependent on voxel sub-sampling
 % for significance!!!!! 
 
-addpath('/Users/blancoarnau/Documents/MATLAB/libsvm/matlab/') % Import SVM toolbox 
-
 nTrials = p(1);
 nConditions = p(2);
 nPerRun = p(3);
@@ -59,6 +57,8 @@ for r = 1:size(train_set,3)
         gp = gp(f); % Take the (constant) randomization vector from the input
     end
     
+    % If the training set and the labeling set do not have the dimensions,
+    % then show an error.
     if(size(train,1) ~= size(gp,1))
         error('Training and gp vector mismatch');
     end
@@ -70,59 +70,64 @@ for r = 1:size(train_set,3)
         in(i,:) = mean(test2(k:l,:));
         k = k + nPerRun; l = l + nPerRun;
     end
+
+    % *** Single trial SVM prediction ***
     
-    %% *** Single-block SVM prediction ***
-    
-    % Set training set to -1 to 1 scale
+    % Set train set to -1 to 1 scale
     [train, pars] = stretch_cols_ind(train, -1, 1); 
     
     % Train SVM model
     [~,v] = find(isnan(train)); % Find NaNs in train set
     train(:,v) = []; % Remove NaNs from train set
+    
+    fprintf('\nTraining SVM model for run ' + string(r) + '...\n');
     svm_model = svmtrain(gp, train, '-t 0 -c 1'); % -t 0 = linear SVM, -c 1 = cost value of 1
     svm_mod{r} = svm_model;
+    fprintf('\nSVM trained!');
     
     % Get the weights from model
     svm_weights = svm_DefineWeights(svm_model);  
     svm_ws{r} = svm_weights;
 
-    % Define test coding variable
+    % Define coding variable for testing
     gp_test = []; k = 1; l = nPerRun;
     for ii = 1:nConditions
         gp_test(k:l,1) = ii;
         k = k + nPerRun;
         l = l + nPerRun;
     end
-
-    %% ** Test SVM model **
-    % Set test set to -1 to 1 scale
+    
+    % Test SVM model
+    
+    % Set train set to -1 to 1 scale
     [test2] = stretchWithGivenPars(test2, [-1 1], pars);
     % [test2, pars] = stretch_cols_ind(test2, -1, 1);
     
     [~,v] = find(isnan(test2)); % Find NaNs in test set
     test2(:,v) = []; % Remove NaNs from test set
+    
+    fprintf('\n\nPredicting trials/blocks...\n');
     [svm_class(:,r), accuracy, dec] = svmpredict(gp_test, test2, svm_model);
-
-    % Compute performance on test runs
+    
+    % Compute performance on testing runs
     f = zeros(nConditions);  % Confusion matrix 
 
     k = 1; l = nPerRun;
     for i = 1:nConditions
         for j = 1:nConditions
-            f(i,j) = length(find(svm_class(k:l,r)==j));
+            f(i,j) = length(find(svm_class(k:l,r) == j));
         end
         k = k + nPerRun; l = l + nPerRun;
     end
 
     svm_cm(:,:,r) = f;
-    svm_pc(r) = trace(f)/(nPerRun*(nConditions));  
+    svm_pc(r) = trace(f) / (nPerRun*(nConditions));  
 
-    %% ** Test SVM Prediction of Condition Average in Test Run **
-    
-    [in] = stretchWithGivenPars(in, [-1 1], pars);  % Set on same scale
-    CondClass = 1:3;
+    % *** Test SVM Prediction of Condition Average in Test Run ***
+    fprintf('\nPredicting conditions...\n');
+    [in] = stretchWithGivenPars(in, [-1 1], pars);
     [svma_class(:,r), accuracy, dec] = svmpredict(CondClass', in, svm_model);
-    accuracy(isnan(accuracy)) = 0; % If accuracy is NaN, set to 0
+
     svm_av(r) = length(find(svma_class(:,r) == CondClass')) ./ (nConditions);
 
 end
@@ -131,6 +136,7 @@ end
 % Proper output format
 data{1} = train_set;
 data{2} = test_set;
+% data{3} = anovas;
 
 svmOut = [];
 svmOut.models = svm_mod;    % SVM model for each cross-validation fold
@@ -138,12 +144,12 @@ svmOut.ws = svm_ws;         % Weights for each binary classification pbm
 svmOut.class = svm_class;   % Single-block classifications
 svmOut.Aclass = svma_class; % Average classification
 svmOut.cm = svm_cm;         % Confusion matrices for single block classifications
-svmOut.pc = svm_pc;         % Percentage correct single trial/block
+svmOut.pc = svm_pc;         % Percentage correct single-block
 svmOut.av = svm_av;         % Percentage correct average
 svmOut.data = data;         % Parsed data used in classifier
 
-% t-test on performance across runs, within subject
-[h,p,ci,stats]= ttest(svmOut.pc,1/nConditions,.05,'right');
+% t test on performance across runs, within subject
+[h,p,ci,stats] = ttest(svmOut.pc,1/nConditions,.05,'right');
 
 % t=[];
 % p=[];

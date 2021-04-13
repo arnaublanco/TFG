@@ -1,7 +1,11 @@
+%The analysis code that was used in: Vetter P., Bola L., Reich L., Bennett M., Muckli L., Amedi A. (2020). Decoding natural sounds in early “visual” cortex of congenitally blind individuals. Current Biology.
+%The code was originally created by Fraser W. Smith (see Smith & Muckli 2010 PNAS)and was adapted to this project by Petra Vetter and Lukasz Bola.
+
 function [betas,t] = computeGLM(data, dm, zTimeSeries,zBetas)
 
-if(zTimeSeries == 1)
-    data = zscore(data);  % Z-score data, voxel-wise (column-wise)
+
+if(zTimeSeries==1)
+    data = zscore(data);  %% z-score data, voxel-wise (column wise), crucial 
 end
 
 nVox = size(data,2);
@@ -9,16 +13,17 @@ nVols = size(data,1);
 betas = zeros(size(dm,2),nVox);
 t = zeros(size(betas));
 
-% Fit GLM independently for each voxel
+% independently for each voxel, fit GLM
 for vox = 1:nVox
     [B,dev,stats] = glmfit(dm,data(:,vox),'normal','constant','off');
-    betas(:,vox) = B; % B -> Betas from GLM (without b0, i.e. additional column of ones)
-    t(:,vox) = stats.t; % stats.t -> t-tests of GLM
+    % no adding of additional column of ones
+    betas(:,vox) = B;
+    t(:,vox) = stats.t;
 end
 
-% Z-score betas within each voxel, across trials
+% zscore betas within each voxel, across trials
 if(zBetas)
-    betas = zscore(betas);  % Z-score betas, voxel-wise
+    betas = zscore(betas);  %% zscore betas, voxel wise
 end
 
 

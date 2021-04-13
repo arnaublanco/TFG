@@ -5,21 +5,22 @@ if POIfile_ind == 1
 elseif POIfile_ind == 2
     roi = 'motor cortex';
 else
-    if patch_ind == 1
+    if Patch_ind == 1
         roi = 'EVC - V1';
     else
         roi = 'EVC - V2';
     end
 end
 
-disp('Computing: sub-0'+string(subject)+' ('+string(roi)+')');
+fprintf('-------------------------------------\n');
+fprintf('Computing: sub-0'+string(subject)+' ('+string(roi)+')');
 tic % Start a stopwatch timer.
 
-permGP = 1; % 0: Standard analysis; 1: Permutation analysis
-
 % Prepare data - get timeseries, do GLM etc
-[outDL] = readDataMtcPoi(subject, Patch_ind, 'LH', CondClass, POIfile_ind, visualize); % Left hemisphere
-[outDR] = readDataMtcPoi(subject, Patch_ind, 'RH', CondClass, POIfile_ind, visualize); % Right hemisphere
+fprintf('\n\nLeft hemisphere:');
+[outDL] = readDataMtcPoi(subject, Patch_ind, 'LH', CondClass, POIfile_ind); % Left hemisphere
+fprintf('\n\nRight hemisphere:');
+[outDR] = readDataMtcPoi(subject, Patch_ind, 'RH', CondClass, POIfile_ind); % Right hemisphere
 
 % Concatenate across vertice dimension - hemispheres
 outD = [];               % Define empty variable outD
@@ -27,10 +28,10 @@ f1 = size(outDL.betasC); % Size of matrix of betas from left hemisphere
 f2 = size(outDR.betasC); % Size of matrix of betas from right hemisphere
 
 % Check that dimensions match
-disp('Joining betas from LH and RH...');
+fprintf('\n\nJoining betas from LH and RH... ');
 pause(1);
 if(f1(1) == f2(1) && f1(3) == f2(3) && f1(4) == f2(4))
-    betasC = cat(2,outDL.betasC,outDR.betasC);  % Concatenate condition-wise betas matrices (left and right hemispheres)
+    betasC = cat(2,outDL.betasC,outDR.betasC);    % Concatenate block-wise betas matrices (left and right hemisphere)
     betas = cat(2,outDL.betas,outDR.betas);     % Concatenate block-wise betas matrices (left and right hemisphere)
     S{3} = outDL.S{3};                          % Permutation labels
     S{3}(4) = f1(2)+f2(2);                      % Sum of dimensions of both hemispheres 
@@ -62,33 +63,28 @@ toc % Elapsed time for GLM, load the data, etc
 
 tic % Start a stopwatch timer
 
-% Parse for cross-validation cycles
-disp('Parsing betas in train set and test set...');
-[train_set, test_set, anovas] = parse_runs_surf(betasC);
-
-toc % Elapsed time for parsing
-
-tic % Start a stopwatch timer
-
 % Perform classification for real data
-disp('Computing SVM without permutation of labels...');
+fprintf('\nComputing SVM without permutation of labels...');
 pause(1);
-permGP = 0;
-[svmOutObs] = singleSVMP(betasC, p, CondClass, permGP);
-Obs_Spc = mean(svmOutObs.pc);
-Obs_Apc = mean(svmOutObs.av);
+
+permGP = 0; % 0: Standard analysis; 1: Permutation analysis
+[svmOutObs] = singleSVMP(betasC, p, 1:3, permGP);
+Obs_Spc = mean(svmOutObs.pc); % Percentage correct single-block
+Obs_Apc = mean(svmOutObs.av); % Percentage correct average
 
 toc % Elapsed time for SVM without permutation of labels
-
+pause(2);
 tic % Start a stopwatch timer
 
 % Executes for loop in parallel with other processes
-disp('Computing SVM with permuted labels...');
+fprintf('\nComputing SVM with permuted labels...');
 pause(1);
 nPermutations = 1000;
 permGP = 1;
+% Parse for cross-validation cycles
+[train_set, test_set, anovas] = parse_runs_surf(betasC);
 parfor (i = 1:nPermutations)
-    [svmOutPerm] = singleSVM_PermP(train_set, test_set, p, CondClass, permGP, inputRandVec(:,i));
+    [svmOutPerm] = singleSVM_PermP(train_set, test_set, p, 1:3, permGP, inputRandVec(:,i));
     Spc(i) = mean(svmOutPerm.pc);
     Apc(i) = mean(svmOutPerm.av);
 end

@@ -4,6 +4,7 @@
 %   · p: Data info.
 %   · CondClass: Stimuli (1: Forest, 2: People, 3: Traffic)
 %   · permGP: 0 for normal analysis; 1 for randomization of labels
+%   · inputRandVec: Randomization vector.
 %  OUTPUT:
 %   · svmOut: MATLAB object containing the results of the SVM.
 
@@ -13,12 +14,6 @@ function [svmOut] = singleSVMP(betasC, p, CondClass, permGP)
 % only use SVM since LDA will not compute (cov will be singular)
 % thus these results show --- method not dependent on voxel sub-sampling
 % for significance!!!!! 
-
-addpath('/Users/blancoarnau/Documents/MATLAB/libsvm/matlab/') % Import SVM toolbox
-
-% get betas and pars
-% betasC=outD.betasC;
-% p=outD.S{3};  
 
 nTrials = p(1);
 nConditions = p(2);
@@ -77,7 +72,7 @@ for r = 1:size(train_set,3)
         k = k + nPerRun; l = l + nPerRun;
     end
 
-    %% *** Single trial SVM prediction ***
+    % *** Single trial SVM prediction ***
     
     % Set train set to -1 to 1 scale
     [train, pars] = stretch_cols_ind(train, -1, 1); 
@@ -85,8 +80,12 @@ for r = 1:size(train_set,3)
     % Train SVM model
     [~,v] = find(isnan(train)); % Find NaNs in train set
     train(:,v) = []; % Remove NaNs from train set
+    
+    fprintf('\nTraining SVM model for run ' + string(r) + '...\n');
+    pause(2);
     svm_model = svmtrain(gp, train, '-t 0 -c 1'); % -t 0 = linear SVM, -c 1 = cost value of 1
     svm_mod{r} = svm_model;
+    fprintf('\nSVM trained!');
     
     % Get the weights from model
     svm_weights = svm_DefineWeights(svm_model);  
@@ -100,7 +99,7 @@ for r = 1:size(train_set,3)
         l = l + nPerRun;
     end
     
-    %% Test SVM model
+    % Test SVM model
     
     % Set train set to -1 to 1 scale
     [test2] = stretchWithGivenPars(test2, [-1 1], pars);
@@ -108,6 +107,9 @@ for r = 1:size(train_set,3)
     
     [~,v] = find(isnan(test2)); % Find NaNs in test set
     test2(:,v) = []; % Remove NaNs from test set
+    
+    fprintf('\n\nPredicting trials/blocks...\n');
+    pause(2);
     [svm_class(:,r), accuracy, dec] = svmpredict(gp_test, test2, svm_model);
     
     % Compute performance on testing runs
@@ -124,9 +126,10 @@ for r = 1:size(train_set,3)
     svm_cm(:,:,r) = f;
     svm_pc(r) = trace(f) / (nPerRun*(nConditions));  
 
-    %% *** Test SVM Prediction of Condition Average in Test Run ***
+    % *** Test SVM Prediction of Condition Average in Test Run ***
+    fprintf('\nPredicting conditions...\n');
+    pause(2);
     [in] = stretchWithGivenPars(in, [-1 1], pars);
-    CondClass = 1:3;
     [svma_class(:,r), accuracy, dec] = svmpredict(CondClass', in, svm_model);
 
     svm_av(r) = length(find(svma_class(:,r) == CondClass')) ./ (nConditions);
@@ -150,7 +153,7 @@ svmOut.av = svm_av;         % Percentage correct average
 svmOut.data = data;         % Parsed data used in classifier
 
 % t test on performance across runs, within subject
-%[h,p,ci,stats] = ttest(svmOut.pc,1/nConditions,.05,'right');
+[h,p,ci,stats] = ttest(svmOut.pc,1/nConditions,.05,'right');
 
 % t = [];
 % p = [];
