@@ -79,7 +79,7 @@ for r = 1:size(train_set,3)
     
     % Train SVM model
     [~,v] = find(isnan(train)); % Find NaNs in train set
-    train(:,v) = []; % Remove NaNs from train set
+    train(:,unique(v)) = []; % Remove NaNs from train set
     
     fprintf('\nTraining SVM model for run ' + string(r) + '...\n');
     pause(2);
@@ -106,7 +106,7 @@ for r = 1:size(train_set,3)
     % [test2, pars] = stretch_cols_ind(test2, -1, 1);
     
     [~,v] = find(isnan(test2)); % Find NaNs in test set
-    test2(:,v) = []; % Remove NaNs from test set
+    test2(:,unique(v)) = []; % Remove NaNs from test set
     
     fprintf('\n\nPredicting trials/blocks...\n');
     pause(2);

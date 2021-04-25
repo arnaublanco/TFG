@@ -1,17 +1,11 @@
 % This is the later version incorporating the non-biased computation of the confusion matrices
 function run_single_sub_CollapseHem_get_unbiased_conf_mats(subject,Patch_ind,CondClass,POIfile_ind)
 
-% subject='DHE05';
-% Patch_ind=1;  %% poi index (eg. 1 for V1, 2 for V2v etc. depending on how
-% many pois and in which order they are defined)
-% CondClass=[1 2 3];   %% CRUCIAL- which conditions to classify
-%needs to correspond to the numbers (condition definitions) in the trial sequence
-
 permGP = 0; % 0: Standard analysis; 1: Permutation analysis
 
 % Prepare data - get timeseries, do GLM etc
-[outDL] = readDataMtcPoi(subject,Patch_ind, 'LH',CondClass,POIfile_ind);
-[outDR] = readDataMtcPoi(subject,Patch_ind, 'RH',CondClass,POIfile_ind);
+[outDL] = readDataMtcPoi(subject, Patch_ind, 'LH', CondClass, POIfile_ind);
+[outDR] = readDataMtcPoi(subject, Patch_ind, 'RH', CondClass, POIfile_ind);
 
 % Concatenate across vertice dimension - hemispheres
 outD = [];
@@ -37,10 +31,9 @@ end
 [svmOut] = singleSVM(outD, permGP);
 
 % t test across runs
-%nConditions=length(outD.S{5}.CondClass);  %% conditions being classified
-%[hST,pST,ci,statsST]=ttest(svmOut.pc,1/nConditions,.05,'right'); % single trial
-%[hAV,pAV,ci,statsAV]=ttest(svmOut.av,1/nConditions,.05,'right'); % average
-
+nConditions=length(outD.S{5}.CondClass);  %% conditions being classified
+[hST,pST,ci,statsST]=ttest(svmOut.pc,1/nConditions,.05,'right'); % single trial
+[hAV,pAV,ci,statsAV]=ttest(svmOut.av,1/nConditions,.05,'right'); % average
 
 % to save the output
 outname = sprintf('%s_UnbiasedConfMatsCollapseHem_Patch%d_POI%d.mat', subject, Patch_ind, POIfile_ind);

@@ -80,10 +80,8 @@ for r = 1:size(train_set,3)
     [~,v] = find(isnan(train)); % Find NaNs in train set
     train(:,v) = []; % Remove NaNs from train set
     
-    fprintf('\nTraining SVM model for run ' + string(r) + '...\n');
     svm_model = svmtrain(gp, train, '-t 0 -c 1'); % -t 0 = linear SVM, -c 1 = cost value of 1
     svm_mod{r} = svm_model;
-    fprintf('\nSVM trained!');
     
     % Get the weights from model
     svm_weights = svm_DefineWeights(svm_model);  
@@ -106,7 +104,6 @@ for r = 1:size(train_set,3)
     [~,v] = find(isnan(test2)); % Find NaNs in test set
     test2(:,v) = []; % Remove NaNs from test set
     
-    fprintf('\n\nPredicting trials/blocks...\n');
     [svm_class(:,r), accuracy, dec] = svmpredict(gp_test, test2, svm_model);
     
     % Compute performance on testing runs
@@ -124,7 +121,6 @@ for r = 1:size(train_set,3)
     svm_pc(r) = trace(f) / (nPerRun*(nConditions));  
 
     % *** Test SVM Prediction of Condition Average in Test Run ***
-    fprintf('\nPredicting conditions...\n');
     [in] = stretchWithGivenPars(in, [-1 1], pars);
     [svma_class(:,r), accuracy, dec] = svmpredict(CondClass', in, svm_model);
 

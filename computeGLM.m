@@ -19,6 +19,10 @@ for vox = 1:nVox
     % no adding of additional column of ones
     betas(:,vox) = B;
     t(:,vox) = stats.t;
+%     plot(dm*B);
+%     hold on;
+%     plot(data(:,vox));
+%     close all;
 end
 
 % zscore betas within each voxel, across trials

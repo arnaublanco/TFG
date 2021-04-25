@@ -21,7 +21,7 @@ dm_block(:,1) = 1;
 t = 1:TR:timepoints*TR; % Time during the experiment
 h = HRF(t); % Hemodynamic Response Function
 
-counter = 2;
+%counter = 2;
 for i = 1:size(conds,2)
    idx = find(strcmp([C{3}], conds{i}));
 
@@ -31,20 +31,25 @@ for i = 1:size(conds,2)
       fin = round(C{2}(idx(b))/TR);
       
       dm_cond(begin+1:begin+fin,i+1) = 1;
-      dm_block(begin+1:begin+fin,counter) = 1; 
-      counter = counter + 1;
    end
    tmp = conv(dm_cond(:,i+1),h'); % Convolve ´dm_cond´ with HRF
    dm_cond(:,i+1) = tmp(1:timepoints); % Place the values in ´dm_cond´
 end
 
-% Convolve ´dm_block´ with HRF
-for j = 2:size(dm_block,2)
-   tmp = conv(dm_block(:,j),h');
-   dm_block(:,j) = tmp(1:timepoints);
+idx = strcmp(C{3},{'baseline'});
+C{1}(idx) = [];
+C{2}(idx) = [];
+C{3}(idx) = [];
+
+for i = 1:nPreds-1
+    begin = round(C{1}(i)/TR);
+    fin = round(C{2}(i)/TR);
+    dm_block(begin+1:begin+fin,i+1) = 1;
+    tmp = conv(dm_block(:,i+1),h');
+    dm_block(:,i+1) = tmp(1:timepoints);
 end
 
-dlmwrite(dir_dm_c,dm_cond,'delimiter','\t');
-dlmwrite(dir_dm_b,dm_block,'delimiter','\t');
+writematrix(dm_cond,dir_dm_c);
+writematrix(dm_block,dir_dm_b);
 
 end

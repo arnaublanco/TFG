@@ -2,13 +2,12 @@
 
 function groupAnalysis_Perm
 
-for subject_nr = 1: length(subjects)
-    sub = 'sub-0' + string(subject_nr);
+for subject_nr = 1:length(subjects)
     for poifile = 1:3
         % Visual areas
         if poifile == 3
             for patch = 1:2
-                filename = [sub,'_MainAnalysis_CollapseHem_Patch',num2str(patch),'_POI',num2str(poifile)];
+                filename = ['sub-0',int2str(subject_nr),'_MainAnalysis_CollapseHem_Patch',num2str(patch),'_POI',num2str(poifile)];
                 load(filename);
                 pooledApc_Poi3(patch).permAcc(1:1000,subject_nr) = Apc;
                 pooledSpc_Poi3(patch).permAcc(1:1000,subject_nr) = Spc;
@@ -19,7 +18,7 @@ for subject_nr = 1: length(subjects)
         % Motor cortex
         elseif poifile == 2
             patch = 1;
-            filename = [sub,'_MainAnalysis_CollapseHem_Patch',num2str(patch),'_POI',num2str(poifile)];
+            filename = ['sub-0',int2str(subject_nr),'_MainAnalysis_CollapseHem_Patch',num2str(patch),'_POI',num2str(poifile)];
             load(filename);
             pooledApc_Poi2(patch).permAcc(1:1000,subject_nr) = Apc;
             pooledSpc_Poi2(patch).permAcc(1:1000,subject_nr) = Spc;
@@ -29,7 +28,7 @@ for subject_nr = 1: length(subjects)
         % Auditory cortex
         else
             patch = 1;
-            filename = [sub,'_MainAnalysis_CollapseHem_Patch',num2str(patch),'_POI',num2str(poifile)];
+            filename = ['sub-0',int2str(subject_nr),'_MainAnalysis_CollapseHem_Patch',num2str(patch),'_POI',num2str(poifile)];
             load(filename);
             pooledApc_Poi1(patch).permAcc(1:1000,subject_nr) = Apc;
             pooledSpc_Poi1(patch).permAcc(1:1000,subject_nr) = Spc;

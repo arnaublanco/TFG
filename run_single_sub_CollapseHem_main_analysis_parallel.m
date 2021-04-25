@@ -1,4 +1,4 @@
-function run_single_sub_CollapseHem_main_analysis_parallel(subject,Patch_ind,CondClass,POIfile_ind,visualize)
+function run_single_sub_CollapseHem_main_analysis_parallel(subject, Patch_ind, CondClass, POIfile_ind)
 
 if POIfile_ind == 1
     roi = 'auditory cortex';
@@ -72,35 +72,35 @@ permGP = 0; % 0: Standard analysis; 1: Permutation analysis
 Obs_Spc = mean(svmOutObs.pc); % Percentage correct single-block
 Obs_Apc = mean(svmOutObs.av); % Percentage correct average
 
-toc % Elapsed time for SVM without permutation of labels
-pause(2);
-tic % Start a stopwatch timer
-
-% Executes for loop in parallel with other processes
-fprintf('\nComputing SVM with permuted labels...');
-pause(1);
-nPermutations = 1000;
-permGP = 1;
-% Parse for cross-validation cycles
-[train_set, test_set, anovas] = parse_runs_surf(betasC);
-parfor (i = 1:nPermutations)
-    [svmOutPerm] = singleSVM_PermP(train_set, test_set, p, 1:3, permGP, inputRandVec(:,i));
-    Spc(i) = mean(svmOutPerm.pc);
-    Apc(i) = mean(svmOutPerm.av);
-end
-
-toc % Elapsed for time for 1000 permutations in parallel
-
-pPerm_Spc = length(find(Spc >= Obs_Spc)) ./ 1000;
-pPerm_Apc = length(find(Apc >= Obs_Apc)) ./ 1000;
-
-% t-test across runs
-%nConditions = length(outD.S{5}.CondClass);  % Conditions being classified
-%[hST,pST,ci,statsST] = ttest(svmOut.pc,1/nConditions,.05,'right'); % Single trial
-%[hAV,pAV,ci,statsAV] = ttest(svmOut.av,1/nConditions,.05,'right'); % Average
+% toc % Elapsed time for SVM without permutation of labels
+% pause(2);
+% tic % Start a stopwatch timer
+% 
+% % Executes for loop in parallel with other processes
+% fprintf('\nComputing SVM with permuted labels...');
+% pause(1);
+% nPermutations = 1000;
+% permGP = 1;
+% % Parse for cross-validation cycles
+% [train_set, test_set, anovas] = parse_runs_surf(betasC);
+% parfor (i = 1:nPermutations)
+%     [svmOutPerm] = singleSVM_PermP(train_set, test_set, p, 1:3, permGP, inputRandVec(:,i));
+%     Spc(i) = mean(svmOutPerm.pc);
+%     Apc(i) = mean(svmOutPerm.av);
+% end
+% 
+% toc % Elapsed for time for 1000 permutations in parallel
+% 
+% pPerm_Spc = length(find(Spc >= Obs_Spc)) ./ 1000;
+% pPerm_Apc = length(find(Apc >= Obs_Apc)) ./ 1000;
+% 
+% % t-test across runs
+% nConditions = length(outD.S{5}.CondClass);  % Conditions being classified
+% [hST,pST,ci,statsST] = ttest(svmOutObs.pc,1/nConditions,.05,'right'); % Single trial
+% [hAV,pAV,ci,statsAV] = ttest(svmOutObs.av,1/nConditions,.05,'right'); % Average
 
 % Save FWStestCGY09_V5.mat to save the output
-disp('Saving results of SVM...');
-pause(1);
-outname = sprintf('%s_MainAnalysis_CollapseHem_Patch%d_POI%d.mat', subject, Patch_ind,POIfile_ind);
-save(outname, 'subject','Patch_ind','permGP','outD','svmOutObs','pPerm_Spc','pPerm_Apc','Spc','Apc');
+% disp('Saving results of SVM...');
+% pause(1);
+% outname = sprintf('subj-0%i_MainAnalysis_CollapseHem_Patch%d_POI%d.mat', subject, Patch_ind, POIfile_ind);
+% save(outname, 'subject','Patch_ind','permGP','outD','svmOutObs','pPerm_Spc','pPerm_Apc','Spc','Apc');
