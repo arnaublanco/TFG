@@ -8,10 +8,6 @@ function [svmOut]=singleSVM(outD, permGP)
 % thus these results show --- method not dependent on voxel sub-sampling
 % for significance!!!!! 
 
-%addpath(genpath('/analyse/6/fMRI/Project8/SVM/libsvm-mat-2.86-1')); % SVM toolbox
-%addpath(genpath('\_fMRI\7TdataMinnesota\SVM\libsvm-mat-2.86-1')); % SVM toolbox
-
-
 % get betas and pars
 betasC=outD.betasC;
 p=outD.S{3};  

@@ -1,56 +1,44 @@
-% It corrects for multiple comparisons in the permutation analysis with a
-% single threshold test according to Nichols & Holmes 2001.
-function multipleCompCorr_SingleThreshold
+% Compute p-values
 
-load groupResults_Perm;
+function multipleCompCorr_SingleThreshold(classifier)
 
-% First pool the classification accuracies for all rounds of permutation 
+if classifier == 1
+    folder = 'SVM';
+elseif classifier == 2
+    folder = 'SVM_RFE';
+else
+    folder = 'KNN';
+end
+load(['Results/',folder,'/groupResults_Perm.mat']); % Load group results with permutation
+nPerm = 1000;
 
+% Accuracy for each ROI per single block/trial
 allApc1 = meanApc.Auditory;
 allApc1(:,2) = meanApc.Motor;
-allApc1(:,3) = meanApc.V1V2V3allecc;
+allApc1(:,3) = meanApc.V1;
+allApc1(:,4) = meanApc.V2;
 
-allApc2 = meanApc.V1allecc;
-allApc2(:,2) = meanApc.V2allecc;
-allApc2(:,3) = meanApc.V3allecc;
-
-% Add more columns if more visual areas shall be included in the comparisons
-
-% Do the same for Spc
-
+% Accuracy for each ROI per condition
 allSpc1 = meanSpc.Auditory;
 allSpc1(:,2) = meanSpc.Motor;
-allSpc1(:,3) = meanSpc.V1V2V3allecc;
+allSpc1(:,3) = meanSpc.V1;
+allSpc1(:,4) = meanSpc.V2;
 
-allSpc2 = meanSpc.V1allecc;
-allSpc2(:,2) = meanSpc.V2allecc;
-allSpc2(:,3) = meanSpc.V3allecc;
-%allSpc(:,4) = meanSpc.EVC;
-
-% Maximum value of each row
+% Find maximum accuracy in both arrays - maximum accuracy distribution
 maxApc1 = max(allApc1,[],2); 
-maxApc2 = max(allApc2,[],2); 
 maxSpc1 = max(allSpc1,[],2); 
-maxSpc2 = max(allSpc2,[],2); 
 
-% Calculate the p-value for each visual area using the maximum distribution
+% Calculate p-value for each ROI using the maximum accuracy distribution
+pPermCorr_Apc.Auditory = length(find(maxApc1 >= meanObsApc.Auditory)) ./nPerm;
+pPermCorr_Apc.Motor = length(find(maxApc1 >= meanObsApc.Motor)) ./nPerm;
+pPermCorr_Apc.V1 = length(find(maxApc1 >= meanObsApc.V1)) ./nPerm;
+pPermCorr_Apc.V2 = length(find(maxApc1 >= meanObsApc.V2)) ./nPerm;
 
-pPermCorr_Apc.Auditory = length(find(maxApc1 >= meanObsApc.Auditory)) ./1000;
-pPermCorr_Apc.Motor = length(find(maxApc1 >= meanObsApc.Motor)) ./1000;
-pPermCorr_Apc.V1V2V3allecc = length(find(maxApc1 >= meanObsApc.V1V2V3allecc)) ./1000;
-
-pPermCorr_Apc.V1allecc = length(find(maxApc2 >= meanObsApc.V1allecc)) ./1000;
-pPermCorr_Apc.V2allecc = length(find(maxApc2 >= meanObsApc.V2allecc)) ./1000;
-pPermCorr_Apc.V3allecc = length(find(maxApc2 >= meanObsApc.V3allecc)) ./1000;
-
-pPermCorr_Spc.Auditory = length(find(maxSpc1 >= meanObsSpc.Auditory)) ./1000;
-pPermCorr_Spc.Motor = length(find(maxSpc1 >= meanObsSpc.Motor)) ./1000;
-pPermCorr_Spc.V1V2V3allecc = length(find(maxSpc1 >= meanObsSpc.V1V2V3allecc)) ./1000;
-
-pPermCorr_Spc.V1allecc = length(find(maxSpc2 >= meanObsSpc.V1allecc)) ./1000;
-pPermCorr_Spc.V2allecc = length(find(maxSpc2 >= meanObsSpc.V2allecc)) ./1000;
-pPermCorr_Spc.V3allecc = length(find(maxSpc2 >= meanObsSpc.V3allecc)) ./1000;
+pPermCorr_Spc.Auditory = length(find(maxSpc1 >= meanObsSpc.Auditory)) ./nPerm;
+pPermCorr_Spc.Motor = length(find(maxSpc1 >= meanObsSpc.Motor)) ./nPerm;
+pPermCorr_Spc.V1 = length(find(maxSpc1 >= meanObsSpc.V1)) ./nPerm;
+pPermCorr_Spc.V2 = length(find(maxSpc1 >= meanObsSpc.V2)) ./nPerm;
 
 
-save('groupResults_SingleThreshold_corrected','pPermCorr_Apc','pPermCorr_Spc');
+save('Results/groupResults_SingleThreshold_corrected','pPermCorr_Apc','pPermCorr_Spc');
 

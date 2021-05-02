@@ -1,4 +1,4 @@
-function run_single_sub_CollapseHem_main_analysis_parallel(subject, Patch_ind, CondClass, POIfile_ind)
+function run_single_sub_CollapseHem_main_analysis_parallel(subject, Patch_ind, CondClass, POIfile_ind, dataType, classifier)
 
 if POIfile_ind == 1
     roi = 'auditory cortex';
@@ -12,15 +12,23 @@ else
     end
 end
 
+if classifier == 1
+    folder = 'SVM';
+elseif classifier == 2
+    folder = 'SVM_RFE';
+else
+    folder = 'KNN';
+end
+
 fprintf('-------------------------------------\n');
 fprintf('Computing: sub-0'+string(subject)+' ('+string(roi)+')');
 tic % Start a stopwatch timer.
 
 % Prepare data - get timeseries, do GLM etc
 fprintf('\n\nLeft hemisphere:');
-[outDL] = readDataMtcPoi(subject, Patch_ind, 'LH', CondClass, POIfile_ind); % Left hemisphere
+[outDL] = readDataMtcPoi(subject, Patch_ind, 'LH', CondClass, POIfile_ind, dataType); % Left hemisphere
 fprintf('\n\nRight hemisphere:');
-[outDR] = readDataMtcPoi(subject, Patch_ind, 'RH', CondClass, POIfile_ind); % Right hemisphere
+[outDR] = readDataMtcPoi(subject, Patch_ind, 'RH', CondClass, POIfile_ind, dataType); % Right hemisphere
 
 % Concatenate across vertice dimension - hemispheres
 outD = [];               % Define empty variable outD
@@ -45,6 +53,16 @@ if(f1(1) == f2(1) && f1(3) == f2(3) && f1(4) == f2(4))
 else
     error('Hemispheric Data mismatch');
 end
+% betasC = outDL.betasC;
+% betas = outDL.betas;
+% outD.betasC = betasC;
+% S{3} = outDL.S{3};
+% S{3}(4) = f1(2);
+% f = [];
+% f.CondClass = CondClass;
+% S{5} = f;
+% outD.betas = betas;
+% outD.S = S;
 
 % Load the randomisation vector for the permutation analysis (same for
 % every subject)
@@ -64,43 +82,50 @@ toc % Elapsed time for GLM, load the data, etc
 tic % Start a stopwatch timer
 
 % Perform classification for real data
-fprintf('\nComputing SVM without permutation of labels...');
+fprintf(['\nComputing ',folder,' without permutation of labels...']);
 pause(1);
 
 permGP = 0; % 0: Standard analysis; 1: Permutation analysis
-[svmOutObs] = singleSVMP(betasC, p, 1:3, permGP);
-Obs_Spc = mean(svmOutObs.pc); % Percentage correct single-block
-Obs_Apc = mean(svmOutObs.av); % Percentage correct average
+if classifier == 1
+    [OutObs] = singleSVMP(betasC, 1:3, permGP);
+elseif classifier == 2
+    [OutObs] = singleSVMP_RFE(betasC, 1:3);
+else
+    [OutObs] = singleKNN(betasC, 1:3, permGP);
+end
+Obs_Spc = mean(OutObs.pc); % Percentage correct single-block
+Obs_Apc = mean(OutObs.av); % Percentage correct average
 
-% toc % Elapsed time for SVM without permutation of labels
-% pause(2);
-% tic % Start a stopwatch timer
-% 
-% % Executes for loop in parallel with other processes
-% fprintf('\nComputing SVM with permuted labels...');
-% pause(1);
-% nPermutations = 1000;
-% permGP = 1;
-% % Parse for cross-validation cycles
-% [train_set, test_set, anovas] = parse_runs_surf(betasC);
-% parfor (i = 1:nPermutations)
-%     [svmOutPerm] = singleSVM_PermP(train_set, test_set, p, 1:3, permGP, inputRandVec(:,i));
-%     Spc(i) = mean(svmOutPerm.pc);
-%     Apc(i) = mean(svmOutPerm.av);
-% end
-% 
-% toc % Elapsed for time for 1000 permutations in parallel
-% 
-% pPerm_Spc = length(find(Spc >= Obs_Spc)) ./ 1000;
-% pPerm_Apc = length(find(Apc >= Obs_Apc)) ./ 1000;
-% 
-% % t-test across runs
-% nConditions = length(outD.S{5}.CondClass);  % Conditions being classified
-% [hST,pST,ci,statsST] = ttest(svmOutObs.pc,1/nConditions,.05,'right'); % Single trial
-% [hAV,pAV,ci,statsAV] = ttest(svmOutObs.av,1/nConditions,.05,'right'); % Average
+toc % Elapsed time for SVM without permutation of labels
+pause(2);
+tic % Start a stopwatch timer
+
+% Executes for loop in parallel with other processes
+fprintf(['\nComputing ',folder,' with permuted labels...']);
+pause(1);
+nPermutations = 100;
+permGP = 1;
+% Parse for cross-validation cycles
+[train_set, test_set, anovas] = parse_runs_surf(betasC);
+parfor (i = 1:nPermutations)
+    [OutPerm] = singleSVM_PermP(train_set, test_set, p, 1:3, permGP, inputRandVec(:,i));
+    Spc(i) = mean(OutPerm.pc);
+    Apc(i) = mean(OutPerm.av);
+end
+
+toc % Elapsed for time for 1000 permutations in parallel
+
+pPerm_Spc = length(find(Spc >= Obs_Spc)) ./ nPermutations;
+pPerm_Apc = length(find(Apc >= Obs_Apc)) ./ nPermutations;
+
+% t-test across runs
+nConditions = length(outD.S{5}.CondClass);  % Conditions being classified
+[hST,pST,ci,statsST] = ttest(OutObs.pc,1/nConditions,.05,'right'); % Single trial
+[hAV,pAV,ci,statsAV] = ttest(OutObs.av,1/nConditions,.05,'right'); % Average
 
 % Save FWStestCGY09_V5.mat to save the output
-% disp('Saving results of SVM...');
-% pause(1);
-% outname = sprintf('subj-0%i_MainAnalysis_CollapseHem_Patch%d_POI%d.mat', subject, Patch_ind, POIfile_ind);
-% save(outname, 'subject','Patch_ind','permGP','outD','svmOutObs','pPerm_Spc','pPerm_Apc','Spc','Apc');
+pause(1);
+disp(['Saving results of ',folder,'...']);
+outname = sprintf(['Results/',folder,'/sub-0%i_MainAnalysis_CollapseHem_Patch%d_POI%d.mat'], subject, Patch_ind, POIfile_ind);
+save(outname, 'subject','Patch_ind','permGP','outD','OutObs','pPerm_Spc','pPerm_Apc','Spc','Apc');
+end

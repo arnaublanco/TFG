@@ -1,27 +1,21 @@
 % Function that computes Support Vector Machine for the betas.
 %  INPUT:
 %   · betasC: Matrix containing the betas.
-%   · p: Data info.
 %   · CondClass: Stimuli (1: Forest, 2: People, 3: Traffic)
 %   · permGP: 0 for normal analysis; 1 for randomization of labels
-%   · inputRandVec: Randomization vector.
 %  OUTPUT:
 %   · svmOut: MATLAB object containing the results of the SVM.
 
-function [svmOut] = singleSVMP(betasC, p, CondClass, permGP)
+function [svmOut] = singleSVMP(betasC, CondClass, permGP)
 
 % to do single SVM analysis - once for whole of POI - no-subsampling
 % only use SVM since LDA will not compute (cov will be singular)
 % thus these results show --- method not dependent on voxel sub-sampling
 % for significance!!!!! 
 
-nTrials = p(1);
-nConditions = p(2);
-nPerRun = p(3);
-nVert = size(betasC,2);  % Always take updated value from betasC matrix
-nRuns = p(5);
-
-% CondClass = outD.S{5}.CondClass;   % Conditions to classify
+nConditions = size(betasC,3);
+nPerRun = size(betasC,1);
+nRuns = size(betasC,4);
 
 % Parse for cross-validation cycles
 [train_set, test_set, anovas] = parse_runs_surf(betasC);
@@ -79,7 +73,7 @@ for r = 1:size(train_set,3)
     
     % Train SVM model
     [~,v] = find(isnan(train)); % Find NaNs in train set
-    train(:,unique(v)) = []; % Remove NaNs from train set
+    train(:,unique(v)) = 0; % Remove NaNs from train set
     
     fprintf('\nTraining SVM model for run ' + string(r) + '...\n');
     pause(2);
@@ -104,13 +98,11 @@ for r = 1:size(train_set,3)
     % Set train set to -1 to 1 scale
     [test2] = stretchWithGivenPars(test2, [-1 1], pars);
     % [test2, pars] = stretch_cols_ind(test2, -1, 1);
-    
-    [~,v] = find(isnan(test2)); % Find NaNs in test set
-    test2(:,unique(v)) = []; % Remove NaNs from test set
+    test2(:,unique(v)) = 0; % Remove NaNs from test set
     
     fprintf('\n\nPredicting trials/blocks...\n');
     pause(2);
-    [svm_class(:,r), accuracy, dec] = svmpredict(gp_test, test2, svm_model);
+    [svm_class(:,r), ~, ~] = svmpredict(gp_test, test2, svm_model);
     
     % Compute performance on testing runs
     f = zeros(nConditions);  % Confusion matrix 
@@ -130,7 +122,9 @@ for r = 1:size(train_set,3)
     fprintf('\nPredicting conditions...\n');
     pause(2);
     [in] = stretchWithGivenPars(in, [-1 1], pars);
-    [svma_class(:,r), accuracy, dec] = svmpredict(CondClass', in, svm_model);
+    in(:,unique(v)) = 0; % Remove NaNs from test set in
+    
+    [svma_class(:,r), ~, ~] = svmpredict(CondClass', in, svm_model);
 
     svm_av(r) = length(find(svma_class(:,r) == CondClass')) ./ (nConditions);
 
@@ -154,50 +148,3 @@ svmOut.data = data;         % Parsed data used in classifier
 
 % t test on performance across runs, within subject
 [h,p,ci,stats] = ttest(svmOut.pc,1/nConditions,.05,'right');
-
-% t = [];
-% p = [];
-% 
-% if(marker == 1 || marker == 2)
-%         
-%     % single block
-%     m = mean(svm_pc);  %% one mean per subject
-%     t = (mean(m)-1/3)./(std(m)./sqrt(length(m)));
-% 
-%     df = length(m) - 1;
-%     p = 1-tcdf(t,df);  %% one tailed p for m>1/3
-% 
-%     % average
-%     m = mean(svm_av);  %% one mean per subject
-%     t(2) = (mean(m)-1/3)./(std(m)./sqrt(length(m)));
-% 
-%     df = length(m)-1;
-%     p(2) = 1-tcdf(t(2),df);
-%     
-% elseif(marker == 3)
-%     
-%     % single block
-%     for r = 1:2
-%         m = svm_pc(r,:);  %% one mean per subject
-%         t(r) = (mean(m)-1/3)./(std(m)./sqrt(length(m)));
-% 
-%         df = length(m)-1;
-%         p(r) = 1-tcdf(t(r),df);
-%     end
-% 
-%     % average
-%     for r = 1:2
-%         m = (svm_av(r,:));  %% one mean per subject
-%         tAv(r) = (mean(m)-1/3)./(std(m)./sqrt(length(m)));
-% 
-%         df = length(m)-1;
-%         pAv(r) = 1-tcdf(tAv(r),df);
-%     end
-% end
-%     
-% 
-% 
-% outname = sprintf('SingleSVM_BlockDesign_Patch%d_Marker%d_zBetas%d_notUni%d.mat', Patch_ind,marker,zBetas,notUni);
-% 
-% save(outname);
-

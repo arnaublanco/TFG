@@ -32,7 +32,7 @@ function [ftRank,ftScore] = ftSel_SVMRFECBR(ft,label,param)
 
 %% default parameters, can be changed by specifying the field in PARAM
 % parameters for general SVM-RFE
-kerType = 2; % kernel type, see libsvm. linear: 0; rbf:2
+kerType = 0; % kernel type, see libsvm. linear: 0; rbf:2
 rfeC = 2^0; % parameter C in SVM training
 rfeG = 2^-6; % parameter g in SVM training
 nStopChunk = 60; % when number of features is less than this num, start 
@@ -176,7 +176,8 @@ end
 function [supVec,alpha_signed] = trainSVM(X,Y,kerOpt)
 % use libsvm to find the support vectors and alphas
 
-type = sprintf('-s 0 -t %d -c %f -g %f -q',kerOpt.type,kerOpt.C,kerOpt.g);
+%type = sprintf('-s 0 -t %d -c %f -g %f -q',kerOpt.type,kerOpt.C,kerOpt.g);
+type = sprintf('-t 0 -c 1');
 model = svmtrain(Y, X, type);
 if isempty(model) || sum(model.nSV) == 0
 	error('libSVM cannot be trained properly. Please check your data')

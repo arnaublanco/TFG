@@ -100,8 +100,6 @@ for r = 1:size(train_set,3)
     % Set train set to -1 to 1 scale
     [test2] = stretchWithGivenPars(test2, [-1 1], pars);
     % [test2, pars] = stretch_cols_ind(test2, -1, 1);
-    
-    [~,v] = find(isnan(test2)); % Find NaNs in test set
     test2(:,v) = []; % Remove NaNs from test set
     
     [svm_class(:,r), accuracy, dec] = svmpredict(gp_test, test2, svm_model);
@@ -122,6 +120,7 @@ for r = 1:size(train_set,3)
 
     % *** Test SVM Prediction of Condition Average in Test Run ***
     [in] = stretchWithGivenPars(in, [-1 1], pars);
+    in(:,v) = []; % Remove NaNs from test set in
     [svma_class(:,r), accuracy, dec] = svmpredict(CondClass', in, svm_model);
 
     svm_av(r) = length(find(svma_class(:,r) == CondClass')) ./ (nConditions);

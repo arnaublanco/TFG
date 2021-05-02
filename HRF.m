@@ -1,4 +1,4 @@
-function [hrf] = hrf(timePoints)
+function [hrf] = HRF(timePoints)
 % Gamma pdf for the peak
 peak_values = gampdf(timePoints, 6);
 % Gamma pdf for the undershoot

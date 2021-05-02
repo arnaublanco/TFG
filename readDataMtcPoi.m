@@ -1,4 +1,4 @@
-function [outD] = readDataMtcPoi(subject, Patch_ind, Hem, CondClass, POIfile_ind)
+function [outD] = readDataMtcPoi(subject, Patch_ind, Hem, CondClass, POIfile_ind, dataType)
 
 % INPUT:
     % subject: Subject number
@@ -6,11 +6,12 @@ function [outD] = readDataMtcPoi(subject, Patch_ind, Hem, CondClass, POIfile_ind
     % Hem: 'LH' or 'RH'
     % CondClass: Conditions to classify
     % POIfile_ind: Index in POI file (1 -> Auditory, 2 -> Motor or 3 -> EVC)
+    % dataType: Volume-based data (1) or surface-based data (2).
     
 % OUTPUT:
     % outD: MATLAB object containing the data.
 
-fileNames = getFileInfo(subject,Hem,CondClass,POIfile_ind);  % Import file for a given hemisphere, subject and task
+fileNames = getFileInfo(subject,Hem,CondClass,POIfile_ind,dataType);  % Import file for a given hemisphere, subject and task
 
 zBetas = 0;           % Z-score betas AFTER GLM prior to classifier analysis
 
@@ -29,66 +30,81 @@ subject = fileNames.subject;
 nRuns = length(funcName);
 nVols = p(1);
 nPreds = p(2);
-nTrials = p(3);
 nPerRun = p(4);
 CondClass = fileNames.CondClass;
 nConditions = length(CondClass);
 
-% Load in POI file
-locsV = [];
-if(POIfile_ind ~= 3)
-    locsV = niftiread(poiName);       
-    %they have used ´unique´ here, which returns the same array without repetitions
-else
-    if(exist('Patch_ind', 'var'))
-        locsV = niftiread(poiName); % this will be modified later - i want the mask to have 1s', 2s', 3s' etc
-        %locsV = niftiread(find(poiName == Patch_ind));
+% Load in POI/ROI file
+if dataType == 1
+    locsV = niftiread(poiName);
+    
+    idx = find(locsV == Patch_ind);
+    [x,y,z] = ind2sub(size(locsV),idx);
+
+    if(strcmp(Hem,'LH'))
+        pos = x < size(locsV,1)/2;
+        x = x(pos);
+        y = y(pos);
+        z = z(pos);
+    else
+        pos = x > size(locsV,1)/2;
+        x = x(pos);
+        y = y(pos);
+        z = z(pos);
     end
-end
 
-idx = find(locsV == 1);
-[x,y,z] = ind2sub(size(locsV),idx);
-
-if(Hem == 'LH')
-    pos = x < size(locsV,1)/2;
-    x = x(pos);
-    y = y(pos);
-    z = z(pos);
+    nVox = sum(pos,'all');
 else
-    pos = x > size(locsV,1)/2;
-    x = x(pos);
-    y = y(pos);
-    z = z(pos);
+    if(POIfile_ind == 1)
+        [~, label, ~] = read_annotation(poiName); % Read .annot file
+        locsV = find(label == 14433340); % Tranverse temporal gyrus has label 14433340
+    elseif(POIfile_ind == 2)
+        [l] = read_label('',poiName); % Read .label file
+        locsV = l(:,1) + 1; % Save vertices in locsV (plus one because in MATLAB indices start at 1)
+    elseif(POIfile_ind == 3)
+        if(exist('Patch_ind', 'var'))
+            [l] = read_label('',poiName{Patch_ind}); % Read .label file
+            locsV = l(:,1) + 1; % Save vertices in locsV (plus one because in MATLAB indices start at 1)
+        end
+    end
+    nVox = length(locsV);
 end
 
-nVox = sum(pos,'all');
-funcData = zeros(nVols,nVox,nRuns);
-DM = zeros(nVols,nPreds,nRuns);
-betas = zeros(nPreds-1,nVox,nRuns);  % Minus one because of mean confound
-tvals = zeros(size(betas));
+funcData = zeros(nVols,nVox,nRuns); % Functional data
+DM = zeros(nVols,nPreds,nRuns); % Design matrix
+betas = zeros(nPreds-1,nVox,nRuns); % Betas across blocks
+tvals = zeros(size(betas)); % T-values
 
-% In the following, a GLM is run for each run with the design matrix of each run.
-% This basically does the "averaging" across time (functional data is a time series).
-% The resulting beta weights for each voxel (derived for each block)
-% are then used as input for the pattern classification, i.e. there will be
-% a multivariate pattern of betas across voxels (space) but not across time.
+% In the following, a GLM is performed for each run with their corresponding design matrix.
+% This basically does an "average" across time, as functional data is a time series.
+% The resulting beta weights are for each voxel and are used as input for
+% the pattern classification, i.e. betas across voxels (space) but not across time.
 
 % Main loop - Data import and GLM
 fprintf('\n- Loading fMRI scans...');
 for r = 1:nRuns
 
-    % Load in Functional data
-    main = niftiread(funcName{r});
-    main = main(:,:,:,end-nVols+1:end); % Crop to nVols
+    if dataType == 1
+        % Load in functional data
+        main = niftiread(funcName{r});
+        main = main(:,:,:,end-nVols+1:end); % Crop to nVols
+
+        % Select voxels in the ROI
+        tmp = zeros(nVox,nVols);
+        for i = 1:size(x,1)
+            tmp(i,:) = reshape(main(x(i),y(i),z(i),:),[1 nVols]);
+        end
+
+        % Tranpose to fit in funcData
+        funcData(:,:,r) = tmp';
+    else
+        % Load functional data
+        main = gifti(convertStringsToChars(funcName{r})); % NOTE: Gifti does not work with strings -> conversion to characters
     
-    % Select voxels in the ROI
-    tmp = zeros(nVox,nVols);
-    for i = 1:size(x,1)
-        tmp(i,:) = reshape(main(x(i),y(i),z(i),:),[1 nVols]);
+        tmp = main.cdata(locsV,end-nVols+1:end); % Crop functional data with nVols and get vertices within POI
+    
+        funcData(:,:,r) = tmp';  % Save functional data
     end
-    
-    % Tranpose to fit in funcData
-    funcData(:,:,r) = tmp';
     
     % Load in Design Matrix
     dmTmp = readmatrix(dmName{r});
@@ -98,16 +114,12 @@ for r = 1:nRuns
         error('Design Matrix and functional data volume number does not match');
     end
     
-    % GLM performed single trial / block, not deconvolved (can't be)
-    % importantly I am z-scoring the timeseries here before running GLM
-    % in order to obtain comparable values to output
-    
     % GLM computation (single block/trial computation)
     fprintf('\n- Computing betas for run '+string(r)+'...');
     [out,out2] = computeGLM(funcData(:,:,r), DM(:,:,r), zTimeSeries,zBetas);
 
-    betas(:,:,r) = out(2:end,:);   % Remove last beta (mean confound)
-    tvals(:,:,r) = out2(2:end,:);  % Remove last t-value (mean cofound)
+    betas(:,:,r) = out(2:end,:);   % Remove first beta (dummy variables' weight)
+    tvals(:,:,r) = out2(2:end,:);  % Remove first t-value
     
 end
 
@@ -161,11 +173,3 @@ outD.tvalsC = tvalsC;
 outD.data = funcData;
 outD.DM = DM;
 outD.S = s;
-
-%%%% FINALLY COMPUTE UNIVARIATE ANOVAS  
-% ** be careful ** not to select voxels on this basis for entry to classifier -
-% is biased if selected across all runs, needs to be only training runs!!!
-%anova=compute_ANOVAS(outD);  %% compute univariate discrimination across ALL RUNS
-%outD.anova=anova;
-%this univariate analysis is run just to see whether there are univariate
-%effects in the data. This is independent from the pattern classification.

@@ -1,23 +1,21 @@
-close all;
-clear all;
+% acc = [];
+% nMax = 100;
+% for k = 1:nMax
+%     KNN_k = fitcknn(train,gp,'NumNeighbors',k);
+%     labels_k = predict(KNN_k,test2);
+%     acc_k = sum(gp_test == labels_k)/size(labels_k,1);
+%     acc = cat(1,acc,acc_k);
+% end
+% plot(1:nMax,acc);
 
-load betas.mat
-load gp.mat
-load gp_test.mat
-
-[coeff, score, ~, ~, ~, mu] = pca(train,'Centered',true);
-
-figure;
-title('Train');
-scatter3(score(:,1),score(:,2),score(:,3),[],gp,'filled');
-
-figure;
-title('Train');
-scatter3(score(:,1),score(:,2),score(:,3),[],gp,'filled');
-
-% scoreTest95 = (test2-mu)*coeff(:,1:3);
-% 
-% figure;
-% scatter3(score(:,1),score(:,2),score(:,3),[],gp,'filled');
-% hold on
-% scatter3(scoreTest95(:,1),scoreTest95(:,2),scoreTest95(:,3),[],gp_test,'*');
+acc = [];
+nMax = 1000;
+for k = 1:nMax
+    idx = find(ftRank <= k);
+    train_k = train(:,idx);
+    test_k = test2(:,idx);
+    svm_model = svmtrain(gp, train_k, '-t 0 -c 1');
+    [svm_class, acc_k, dec] = svmpredict(gp_test, test2, svm_model);
+    acc = cat(1,acc,acc_k(1));
+end
+plot(1:nMax,acc);
