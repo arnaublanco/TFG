@@ -25,7 +25,7 @@ else
     nVols = 218;
 end
 nPreds = 18+1;  % Number of stimulation blocks plus 1 for baseline 
-nTrials = 18;   % Number of stimulation blocks (without baseline) per run
+nTrials = 12;   % Number of stimulation blocks (without baseline) per run
 nPerRun = 6;    % Number of blocks per condition per run
 nRuns = 4;
 

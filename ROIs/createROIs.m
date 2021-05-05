@@ -19,7 +19,6 @@ V_visual = zeros(size(V));
 % interest is, and 0s' otherwise.
 V_visual(V == 17) = 1;
 V_visual(V == 18) = 2;
-V_visual(V == 19) = 3;
 V_auditory(V == 41 | V == 42 | V == 22) = 1;
 V_motor(V == 4) = 1;
 

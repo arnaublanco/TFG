@@ -60,6 +60,7 @@ else
         locsV = find(label == 14433340); % Tranverse temporal gyrus has label 14433340
     elseif(POIfile_ind == 2)
         [l] = read_label('',poiName); % Read .label file
+        %locsV = find(label == 11832380);
         locsV = l(:,1) + 1; % Save vertices in locsV (plus one because in MATLAB indices start at 1)
     elseif(POIfile_ind == 3)
         if(exist('Patch_ind', 'var'))

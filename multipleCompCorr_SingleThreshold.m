@@ -40,5 +40,5 @@ pPermCorr_Spc.V1 = length(find(maxSpc1 >= meanObsSpc.V1)) ./nPerm;
 pPermCorr_Spc.V2 = length(find(maxSpc1 >= meanObsSpc.V2)) ./nPerm;
 
 
-save('Results/groupResults_SingleThreshold_corrected','pPermCorr_Apc','pPermCorr_Spc');
+save(['Results/',folder,'/groupResults_SingleThreshold_corrected'],'pPermCorr_Apc','pPermCorr_Spc');
 

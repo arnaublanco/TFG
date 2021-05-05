@@ -21,7 +21,6 @@ dm_block(:,1) = 1;
 t = 1:TR:timepoints*TR; % Time during the experiment
 h = HRF(t); % Hemodynamic Response Function
 
-%counter = 2;
 for i = 1:size(conds,2)
    idx = find(strcmp([C{3}], conds{i}));
 

@@ -70,8 +70,9 @@ load randVecPerm;
 inputRandVec = f;
 
 % Perform classification for Permutation Analysis
-Spc = zeros(1000,1);
-Apc = zeros(1000,1);
+nPermutations = 1000;
+Spc = zeros(nPermutations,1);
+Apc = zeros(nPermutations,1);
 betasC = outD.betasC;
 p = outD.S{3};
 CondClass = outD.S{5}.CondClass;
@@ -84,14 +85,14 @@ tic % Start a stopwatch timer
 % Perform classification for real data
 fprintf(['\nComputing ',folder,' without permutation of labels...']);
 pause(1);
-
+nCond = 1:3;
 permGP = 0; % 0: Standard analysis; 1: Permutation analysis
 if classifier == 1
-    [OutObs] = singleSVMP(betasC, 1:3, permGP);
+    [OutObs] = singleSVMP(betasC, nCond, permGP);
 elseif classifier == 2
-    [OutObs] = singleSVMP_RFE(betasC, 1:3);
+    [OutObs] = singleSVMP_RFE(betasC, nCond);
 else
-    [OutObs] = singleKNN(betasC, 1:3, permGP);
+    [OutObs] = singleKNN(betasC, nCond, permGP);
 end
 Obs_Spc = mean(OutObs.pc); % Percentage correct single-block
 Obs_Apc = mean(OutObs.av); % Percentage correct average
@@ -103,15 +104,17 @@ tic % Start a stopwatch timer
 % Executes for loop in parallel with other processes
 fprintf(['\nComputing ',folder,' with permuted labels...']);
 pause(1);
-nPermutations = 100;
 permGP = 1;
 % Parse for cross-validation cycles
 [train_set, test_set, anovas] = parse_runs_surf(betasC);
-parfor (i = 1:nPermutations)
-    [OutPerm] = singleSVM_PermP(train_set, test_set, p, 1:3, permGP, inputRandVec(:,i));
-    Spc(i) = mean(OutPerm.pc);
-    Apc(i) = mean(OutPerm.av);
+if classifier ~= 3
+    parfor (i = 1:nPermutations)
+        [OutPerm] = singleSVM_PermP(train_set, test_set, p, 1:3, permGP, inputRandVec(:,i));
+        Spc(i) = mean(OutPerm.pc);
+        Apc(i) = mean(OutPerm.av);
+    end
 end
+% add KNN permutations
 
 toc % Elapsed for time for 1000 permutations in parallel
 

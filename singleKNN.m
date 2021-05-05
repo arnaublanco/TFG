@@ -61,26 +61,18 @@ for r = 1:size(train_set,3)
     
     % Normalize train and test sets
     [train, pars] = stretch_cols_ind(train, -1, 1); 
-    [test2] = stretchWithGivenPars(test2, [-1 1], pars);
     [in] = stretchWithGivenPars(in, [-1 1], pars);
     
     % Remove NaNs in train and test sets
     [~,v] = find(isnan(train)); % Find NaNs in train set
     train(:,unique(v)) = []; % Remove NaNs from train set
-    test2(:,unique(v)) = []; % Remove NaNs from test set
     in(:,unique(v)) = []; % Remove NaNs from test set
     
     acc = [];
     nMax = 100;
     for k = 1:nMax
         KNN_k = fitcknn(train,gp,'NumNeighbors',k,'Distance','Euclidean','Standardize',1);
-        %labels_k = predict(KNN_k,test2);
-        try predict(KNN_k,in)
-            labels_k = predict(KNN_k,in);
-        catch
-            error('not working');
-        end
-        %acc_k = sum(gp_test == labels_k)/size(labels_k,1);
+        labels_k = predict(KNN_k,in);
         acc_k = sum(CondClass' == labels_k)/size(labels_k,1);
         acc = cat(1,acc,acc_k);
     end

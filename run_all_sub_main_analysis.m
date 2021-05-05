@@ -12,7 +12,7 @@ function run_all_sub_main_analysis(type, classifier)
         patches = 2; % Number of patches of the EVC (V1 and V2)
     end
 
-    for subject = 2:subjects
+    for subject = 1:subjects
         if subject ~= 6 % Skip the 6th subject (corrupted file)
             for POIfile_ind = 1:3   % 3 POIs/ROIs: Auditory, Motor and EVC
                 if POIfile_ind == 3
