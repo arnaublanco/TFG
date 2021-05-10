@@ -1,15 +1,15 @@
-function [outD] = readDataMtcPoi(subject, Patch_ind, Hem, CondClass, POIfile_ind, dataType)
-
-% INPUT:
-    % subject: Subject number
-    % Patch_ind: Patch within the POIs that will be used (1, 2, 3, ... or 16) 
-    % Hem: 'LH' or 'RH'
-    % CondClass: Conditions to classify
-    % POIfile_ind: Index in POI file (1 -> Auditory, 2 -> Motor or 3 -> EVC)
-    % dataType: Volume-based data (1) or surface-based data (2).
+% Function that reads half hemisphere of a fMRI file.
+%  INPUT:
+%   · subject: Subject number
+%   · Patch_ind: Patch within the POIs that will be used (1, 2, 3, ... or 16) 
+%   · Hem: 'LH' or 'RH'
+%   · CondClass: Conditions to classify
+%   · POIfile_ind: Index in POI file (1 -> Auditory, 2 -> Motor or 3 -> EVC)
+%   · dataType: Volume-based data (1) or surface-based data (2).
+%  OUTPUT:
+%   · outD: MATLAB object containing the data.
     
-% OUTPUT:
-    % outD: MATLAB object containing the data.
+function [outD] = readDataMtcPoi(subject, Patch_ind, Hem, CondClass, POIfile_ind, dataType)
 
 fileNames = getFileInfo(subject,Hem,CondClass,POIfile_ind,dataType);  % Import file for a given hemisphere, subject and task
 

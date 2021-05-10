@@ -14,7 +14,16 @@ addpath(genpath('/Applications/freesurfer/matlab'));
 dataType = 2;
 
 % Options: Classifier -> 1: SVM, 2: SVM-RFE, 3: KNN
-classifier = 2;
+classifier = 3;
+
+% Options: In the case of SVM, run cross-validation per run (1) or per
+% block (2).
+cv = 2;
+
+% Raise error if the parameters do not have correct values.
+if (dataType ~= 1 && dataType ~= 2) || (classifier ~= 1 && classifier ~= 2 && classifier ~= 3) || (cv ~= 1 && cv ~= 2)
+   error('The selected parameters are not correct.'); 
+end
 
 if dataType == 1   
     fprintf('** Volume-based data ** \n');
@@ -28,7 +37,7 @@ end
 %   3. Data import: readDataMtcPoi.m
 %   4. Compute betas with GLM: computeGLM.m
 %   5. Classification for every subject with and without permutation of labels.
-run_all_sub_main_analysis(dataType,classifier);
+run_all_sub_main_analysis(dataType,classifier,cv);
 
 % Run single_sub_meanClassAccu.m:
 % Saves averaged accuracy for each subject and ROI across cross-classification runs. 

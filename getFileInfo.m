@@ -1,13 +1,13 @@
-function [input_file_info] = getFileInfo(subject, Hem, CondClass, POIfile_ind, dataType)
-
-% INPUT:
-    % subject: Subject number
-    % Hem: 'LH' or 'RH'
-    % CondClass: Conditions to classify
-    % POIfile_ind: Index in POI file (1 -> Auditory, 2 -> Motor or 3 -> EVC)
+% Function that obtains the information from files.
+%  INPUT:
+%   · subject: Subject number
+%   · Hem: 'LH' or 'RH'
+%   · CondClass: Conditions to classify
+%   · POIfile_ind: Index in POI file (1 -> Auditory, 2 -> Motor or 3 -> EVC) 
+%  OUTPUT:
+%   · input_file_info: MATLAB object containing the data info.
     
-% OUTPUT:
-    % input_file_info: MATLAB object containing the data info.
+function [input_file_info] = getFileInfo(subject, Hem, CondClass, POIfile_ind, dataType)
 
 if dataType == 1
     dir_name = '/Users/blancoarnau/Google Drive/TFG Arnau Blanco/data/output/'; % Path to the files
@@ -27,7 +27,7 @@ end
 nPreds = 18+1;  % Number of stimulation blocks plus 1 for baseline 
 nTrials = 18;   % Number of stimulation blocks (without baseline) per run
 nPerRun = 6;    % Number of blocks per condition per run
-nRuns = 4;
+nRuns = 4;      % Number of runs
 
 func_name = cell(1,nRuns);
 dm_block = cell(1,nRuns);

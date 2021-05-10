@@ -8,16 +8,12 @@
 
 function [svmOut] = singleSVMP(betasC, CondClass, permGP)
 
-% to do single SVM analysis - once for whole of POI - no-subsampling
-% only use SVM since LDA will not compute (cov will be singular)
-% thus these results show --- method not dependent on voxel sub-sampling
-% for significance!!!!! 
-
 nConditions = size(betasC,3);
 nPerRun = size(betasC,1);
 nRuns = size(betasC,4);
 
 % Parse for cross-validation cycles
+fprintf('\n Parse train and test sets \n');
 [train_set, test_set, anovas] = parse_runs_surf(betasC);
 
 % Output variables
@@ -30,7 +26,6 @@ svm_av = zeros(nRuns,1);
 svm_mod = cell(1,nRuns);
    
 % Main loop - Cross-validation cycles in every run
-
 for r = 1:size(train_set,3)  
 
     % Define train set and test set for this cycle of cross-validation
@@ -76,7 +71,7 @@ for r = 1:size(train_set,3)
     train(:,unique(v)) = 0; % Remove NaNs from train set
     
     fprintf('\nTraining SVM model for run ' + string(r) + '...\n');
-    pause(2);
+    pause(1);
     svm_model = svmtrain(gp, train, '-t 0 -c 1'); % -t 0 = linear SVM, -c 1 = cost value of 1
     svm_mod{r} = svm_model;
     fprintf('\nSVM trained!');
@@ -101,7 +96,7 @@ for r = 1:size(train_set,3)
     test2(:,unique(v)) = 0; % Remove NaNs from test set
     
     fprintf('\n\nPredicting trials/blocks...\n');
-    pause(2);
+    pause(1);
     [svm_class(:,r), ~, ~] = svmpredict(gp_test, test2, svm_model);
     
     % Compute performance on testing runs
@@ -120,7 +115,7 @@ for r = 1:size(train_set,3)
 
     % *** Test SVM Prediction of Condition Average in Test Run ***
     fprintf('\nPredicting conditions...\n');
-    pause(2);
+    pause(1);
     [in] = stretchWithGivenPars(in, [-1 1], pars);
     in(:,unique(v)) = 0; % Remove NaNs from test set in
     

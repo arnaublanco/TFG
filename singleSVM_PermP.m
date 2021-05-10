@@ -12,15 +12,8 @@
 
 function [svmOut] = singleSVM_PermP(train_set, test_set, p, CondClass, permGP, inputRandVec)
 
-% to do single SVM analysis - once for whole of POI - no-subsampling
-% only use SVM since LDA will not compute (cov will be singular)
-% thus these results show --- method not dependent on voxel sub-sampling
-% for significance!!!!! 
-
-nTrials = p(1);
 nConditions = p(2);
 nPerRun = p(3);
-nVert = size(train_set,2);  % Always take updated value from betasC matrix
 nRuns = p(5);
 
 % Output variables
@@ -78,7 +71,7 @@ for r = 1:size(train_set,3)
     
     % Train SVM model
     [~,v] = find(isnan(train)); % Find NaNs in train set
-    train(:,v) = []; % Remove NaNs from train set
+    train(:,unique(v)) = 0; % Remove NaNs from train set
     
     svm_model = svmtrain(gp, train, '-t 0 -c 1'); % -t 0 = linear SVM, -c 1 = cost value of 1
     svm_mod{r} = svm_model;
@@ -99,10 +92,9 @@ for r = 1:size(train_set,3)
     
     % Set train set to -1 to 1 scale
     [test2] = stretchWithGivenPars(test2, [-1 1], pars);
-    % [test2, pars] = stretch_cols_ind(test2, -1, 1);
-    test2(:,v) = []; % Remove NaNs from test set
+    test2(:,unique(v)) = 0; % Remove NaNs from test set
     
-    [svm_class(:,r), accuracy, dec] = svmpredict(gp_test, test2, svm_model);
+    [svm_class(:,r), ~, ~] = svmpredict(gp_test, test2, svm_model);
     
     % Compute performance on testing runs
     f = zeros(nConditions);  % Confusion matrix 
@@ -120,8 +112,8 @@ for r = 1:size(train_set,3)
 
     % *** Test SVM Prediction of Condition Average in Test Run ***
     [in] = stretchWithGivenPars(in, [-1 1], pars);
-    in(:,v) = []; % Remove NaNs from test set in
-    [svma_class(:,r), accuracy, dec] = svmpredict(CondClass', in, svm_model);
+    in(:,unique(v)) = []; % Remove NaNs from test set in
+    [svma_class(:,r), ~, ~] = svmpredict(CondClass', in, svm_model);
 
     svm_av(r) = length(find(svma_class(:,r) == CondClass')) ./ (nConditions);
 
@@ -131,7 +123,6 @@ end
 % Proper output format
 data{1} = train_set;
 data{2} = test_set;
-% data{3} = anovas;
 
 svmOut = [];
 svmOut.models = svm_mod;    % SVM model for each cross-validation fold

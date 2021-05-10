@@ -13,13 +13,11 @@ nRuns = size(betasC,4);
 
 fprintf('\nParsing train and test sets...\n');
 % Parse for cross-validation cycles
-[train_set, test_set, anovas] = parse_runs_surf(betasC);
+[train_set, test_set, anovas] = parse_runs_surf_blocks(betasC);
 
 % Output variables
 nFolds = size(train_set,3);
-svm_ws = cell(1,nFolds);
 svma_class = zeros(nConditions,nFolds);
-svm_pc = zeros(nFolds,1);
 svm_av = zeros(nFolds,1);
 svm_mod = cell(1,nFolds);
 
@@ -70,7 +68,7 @@ for f = 1:size(train_set,3)
     [test2] = stretchWithGivenPars(test2, [-1 1], pars);
     test2(:,unique(v)) = 0; % Remove NaNs from test set
     
-    fprintf('\nTraining SVM model for run ' + string(f) + ' with RFE...\n');
+    fprintf('\nTraining SVM model for fold ' + string(f) + ' with RFE...\n');
     pause(1);
     
     [ftRank,~] = ftSel_SVMRFECBR(train,gp); % Compute RFE
@@ -118,7 +116,7 @@ for f = 1:size(train_set,3)
     [test2] = stretchWithGivenPars(test2, [-1 1], pars);
     test2(:,unique(v)) = 0; % Remove NaNs from test set
     
-    fprintf('\nTraining SVM model for run ' + string(f) + ' with ' + int2str(numK) + ' selected voxels...\n');
+    fprintf('\nTraining SVM model for fold ' + string(f) + ' with ' + int2str(numK) + ' selected voxels...\n');
     pause(1);
     
     idx = find(ranks(:,f) <= numK); % Find indices that have a lower rank than numK
@@ -128,14 +126,10 @@ for f = 1:size(train_set,3)
     svm_model = svmtrain(gp, train, '-t 0 -c 1'); % -t 0 = linear SVM, -c 1 = cost value of 1
     svm_mod{f} = svm_model;
     
-    % Get the weights from model
-    svm_weights = svm_DefineWeights(svm_model);  
-    svm_ws{f} = svm_weights;
-    
     % Test SVM model
     
     fprintf('\nPredicting conditions...\n');
-    [svma_class(:,f), accuracy, dec] = svmpredict(CondClass', test2, svm_model);
+    [svma_class(:,f), ~, ~] = svmpredict(CondClass', test2, svm_model);
     
     pause(1);
     svm_av(f) = length(find(svma_class(:,f) == CondClass')) ./ (nConditions);
@@ -150,9 +144,8 @@ data{3} = anovas;
 
 svmOut = [];
 svmOut.models = svm_mod;    % SVM model for each cross-validation fold
-svmOut.ws = svm_ws;         % Weights for each binary classification pbm
 svmOut.Aclass = svma_class; % Average classification
-svmOut.pc = svm_pc;         % Percentage correct single-block
+svmOut.pc = svm_av;         % Percentage correct single-block
 svmOut.av = svm_av;         % Percentage correct average
 svmOut.data = data;         % Parsed data used in classifier
 

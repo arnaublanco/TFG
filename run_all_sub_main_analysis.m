@@ -2,7 +2,9 @@
 % INPUT:
 %   · type: 1 for volume-based data and 2 for surface-based data.
 %   · classifier: 1 for SVM, 2 for SVM-RFE and 3 for KNN
-function run_all_sub_main_analysis(type, classifier)
+%   · cv: 1 for cross-validation per runs and 2 for CV per blocks
+
+function run_all_sub_main_analysis(type, classifier, cv)
 
     subjects = 8; % Number of subjects
     CondClass = [{'forest'}, {'people'}, {'traffic'}]; % Conditions to classify (stimuli): Forest, People and Traffic (1, 2 and 3)
@@ -17,11 +19,11 @@ function run_all_sub_main_analysis(type, classifier)
             for POIfile_ind = 1:3  % 3 POIs/ROIs: Auditory, Motor and EVC
                 if POIfile_ind == 3
                     for patch = 1:patches
-                        run_single_sub_CollapseHem_main_analysis_parallel(subject, patch, CondClass, POIfile_ind, type, classifier);
+                        run_single_sub_CollapseHem_main_analysis_parallel(subject, patch, CondClass, POIfile_ind, type, classifier, cv);
                     end
                 else
                     patch = 1;
-                    run_single_sub_CollapseHem_main_analysis_parallel(subject, patch, CondClass, POIfile_ind, type, classifier);
+                    run_single_sub_CollapseHem_main_analysis_parallel(subject, patch, CondClass, POIfile_ind, type, classifier, cv);
                 end
             end
         end

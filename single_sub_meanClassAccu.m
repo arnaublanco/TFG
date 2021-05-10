@@ -1,5 +1,8 @@
-% Computes the mean classification accuracy results for each subject
+% Function that computes the mean classification accuracy results for each subject
 % across cross-validation cycles.
+%  INPUT:
+%   · classifier: Type of classifier.
+
 function single_sub_meanClassAccu(classifier)
 
 subjects = 8;
