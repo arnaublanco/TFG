@@ -11,53 +11,55 @@ function [train_set, test_set, anovas] = parse_runs_surf(mask_vox2)
 
 [nPerRun, nVert, nConditions, nRuns] = size(mask_vox2);
 
-% The function ´nchoosek´ will return a matrix with all possible
-% combinations with ´nRuns´ choose ´nRuns´ - 1. Every number represents what run
+% The function nchoosek will return a matrix with all possible
+% combinations with nRuns choose nRuns - 1. Every number represents what run
 % is taken out for training.
-code = nchoosek(1:nRuns,nRuns-1); % Train on n-1 elements, and test the nth (LOOCV)
 
-count = zeros(nRuns); % Count the number of times a given run appears in the permutation
-train_set = zeros((nRuns-1)*nPerRun*nConditions, nVert, nRuns);
-test_set = zeros(nConditions*nPerRun, nVert, nRuns);
+nFolds = nPerRun*nRuns;
+
+code = nchoosek(1:nFolds,nFolds-1); % Train on n-1 elements, and test the nth (LOOCV)
+
+train_set = zeros((nFolds - 1)*nConditions, nVert, nFolds);
+test_set = zeros(nConditions, nVert, nFolds);
 
 % Leave-one-out cross-validation
-for r = 1:nRuns
+for f = 1:nFolds
     
-    training = []; % Collapse across runs
-    for i = 1:nRuns-1
-        training = cat(1,training,mask_vox2(:,:,:,code(r,i))); % Concatenate betas at permutated run
-        count(r,code(r,i)) = count(r,code(r,i))+1; % Count that permutated run
+    left = setdiff(1:nFolds,code(f,:));
+    
+    collapse_runs = []; % Collapse across runs
+    for i = 1:nRuns
+        collapse_runs = cat(1,collapse_runs,mask_vox2(:,:,:,i)); % Concatenate betas at permutated fold
     end
 
-    left = find(count(r,:) == 0);
-    t = mask_vox2(:,:,:,left);  % Find non-used run (i.e. the one left)
-    
-    % Collapse over conditions for both training and test %
-    
-    % Training
-    train = [];
+    % Collapse over conditions %
+
+    collapse_cond = [];
     for i = 1:nConditions
-        train = cat(1,train,training(:,:,i));
+        collapse_cond = cat(1,collapse_cond,collapse_runs(:,:,i));
     end
-
-    % Testing
+    
     test = [];
-    for i = 1:nConditions
-        test = cat(1,test,t(:,:,i));
+    count = [];
+    for c = 1:nConditions
+       count = cat(1,count,(c-1)*nPerRun*nRuns+left);
+       test = cat(1,test,collapse_cond((c-1)*nPerRun*nRuns+left,:));
     end
     
-    train_set(:,:,r) = train;
-    test_set(:,:,r) = test;
+    train = collapse_cond(setdiff(1:nPerRun*nRuns*nConditions,count),:);
     
-    % Add ANOVA for each training set
-    gp = []; k = 1; l = nPerRun*(nRuns-1);
+    % Compute labels gp for ANOVA
+    gp = []; k = 1; l = nPerRun*nRuns-1;
     for ii = 1:nConditions
         gp(k:l,1) = ii;
-        k = k+nPerRun*(nRuns-1);
-        l = l+nPerRun*(nRuns-1);
+        k = k+nPerRun*nRuns-1;
+        l = l+nPerRun*nRuns-1;
     end
     
-    [anovas(:,:,r)] = voi_ANOVA(squeeze(train_set(:,:,r)), gp); % Compute ANOVAs per run of training set 
+    train_set(:,:,f) = train;
+    test_set(:,:,f) = test;
+    
+    [anovas(:,:,f)] = voi_ANOVA(squeeze(train_set(:,:,f)), gp); % Compute ANOVAs per run of training set 
     
 end
 

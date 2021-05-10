@@ -14,7 +14,7 @@ addpath(genpath('/Applications/freesurfer/matlab'));
 dataType = 2;
 
 % Options: Classifier -> 1: SVM, 2: SVM-RFE, 3: KNN
-classifier = 3;
+classifier = 2;
 
 if dataType == 1   
     fprintf('** Volume-based data ** \n');

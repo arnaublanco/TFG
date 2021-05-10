@@ -101,34 +101,34 @@ toc % Elapsed time for SVM without permutation of labels
 pause(2);
 tic % Start a stopwatch timer
 
-% Executes for loop in parallel with other processes
-fprintf(['\nComputing ',folder,' with permuted labels...']);
-pause(1);
-permGP = 1;
-% Parse for cross-validation cycles
-[train_set, test_set, anovas] = parse_runs_surf(betasC);
-if classifier ~= 3
-    parfor (i = 1:nPermutations)
-        [OutPerm] = singleSVM_PermP(train_set, test_set, p, 1:3, permGP, inputRandVec(:,i));
-        Spc(i) = mean(OutPerm.pc);
-        Apc(i) = mean(OutPerm.av);
-    end
-end
-% add KNN permutations
-
-toc % Elapsed for time for 1000 permutations in parallel
-
-pPerm_Spc = length(find(Spc >= Obs_Spc)) ./ nPermutations;
-pPerm_Apc = length(find(Apc >= Obs_Apc)) ./ nPermutations;
-
-% t-test across runs
-nConditions = length(outD.S{5}.CondClass);  % Conditions being classified
-[hST,pST,ci,statsST] = ttest(OutObs.pc,1/nConditions,.05,'right'); % Single trial
-[hAV,pAV,ci,statsAV] = ttest(OutObs.av,1/nConditions,.05,'right'); % Average
-
-% Save FWStestCGY09_V5.mat to save the output
-pause(1);
-disp(['Saving results of ',folder,'...']);
-outname = sprintf(['Results/',folder,'/sub-0%i_MainAnalysis_CollapseHem_Patch%d_POI%d.mat'], subject, Patch_ind, POIfile_ind);
-save(outname, 'subject','Patch_ind','permGP','outD','OutObs','pPerm_Spc','pPerm_Apc','Spc','Apc');
+% % Executes for loop in parallel with other processes
+% fprintf(['\nComputing ',folder,' with permuted labels...']);
+% pause(1);
+% permGP = 1;
+% % Parse for cross-validation cycles
+% [train_set, test_set, anovas] = parse_runs_surf(betasC);
+% if classifier ~= 3
+%     parfor (i = 1:nPermutations)
+%         [OutPerm] = singleSVM_PermP(train_set, test_set, p, 1:3, permGP, inputRandVec(:,i));
+%         Spc(i) = mean(OutPerm.pc);
+%         Apc(i) = mean(OutPerm.av);
+%     end
+% end
+% % add KNN permutations
+% 
+% toc % Elapsed for time for 1000 permutations in parallel
+% 
+% pPerm_Spc = length(find(Spc >= Obs_Spc)) ./ nPermutations;
+% pPerm_Apc = length(find(Apc >= Obs_Apc)) ./ nPermutations;
+% 
+% % t-test across runs
+% nConditions = length(outD.S{5}.CondClass);  % Conditions being classified
+% [hST,pST,ci,statsST] = ttest(OutObs.pc,1/nConditions,.05,'right'); % Single trial
+% [hAV,pAV,ci,statsAV] = ttest(OutObs.av,1/nConditions,.05,'right'); % Average
+% 
+% % Save FWStestCGY09_V5.mat to save the output
+% pause(1);
+% disp(['Saving results of ',folder,'...']);
+% outname = sprintf(['Results/',folder,'/sub-0%i_MainAnalysis_CollapseHem_Patch%d_POI%d.mat'], subject, Patch_ind, POIfile_ind);
+% save(outname, 'subject','Patch_ind','permGP','outD','OutObs','pPerm_Spc','pPerm_Apc','Spc','Apc');
 end

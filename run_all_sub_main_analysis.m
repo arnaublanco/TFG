@@ -14,7 +14,7 @@ function run_all_sub_main_analysis(type, classifier)
 
     for subject = 1:subjects
         if subject ~= 6 % Skip the 6th subject (corrupted file)
-            for POIfile_ind = 1:3   % 3 POIs/ROIs: Auditory, Motor and EVC
+            for POIfile_ind = 1:3  % 3 POIs/ROIs: Auditory, Motor and EVC
                 if POIfile_ind == 3
                     for patch = 1:patches
                         run_single_sub_CollapseHem_main_analysis_parallel(subject, patch, CondClass, POIfile_ind, type, classifier);

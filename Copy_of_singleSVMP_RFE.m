@@ -47,7 +47,7 @@ nMax = size(train_set,2); % Maximum number of ranks
 for r = 1:size(train_set,3)
 
     % Define train set and test set for this cycle of cross-validation
-    train = train_set(:,:,r);  
+    train = train_set(:,:,r);
     test2 = test_set(:,:,r);
     
     % If the training set and the labeling set do not have the dimensions,
@@ -79,7 +79,7 @@ for r = 1:size(train_set,3)
     pause(2);
     
     [ftRank,~] = ftSel_SVMRFECBR(train,gp); % Compute RFE
-    if r ~= size(train_set,3)
+    %if r ~= size(train_set,3)
         acc = [];
         % Loop to compute accuracies with respect to the value of k
         for k = 1:nMax
@@ -90,7 +90,7 @@ for r = 1:size(train_set,3)
             acc = cat(1,acc,acc_k(1));
         end
         acc_avg = cat(2,acc_avg,acc);
-    end
+    %end
     ranks = cat(2,ranks,ftRank');
     
 end
