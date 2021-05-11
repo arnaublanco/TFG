@@ -51,5 +51,5 @@ groupAnalysis_Perm(classifier);
 % Run multipleCompCorr_SingleThreshold.m:
 %   1. Correct general analyses using single threshold test.
 %   2. Two separate corrections are calculated - one for EVC, auditory cortex
-%   and the motor cortex; and one for V1, V2 and V3
+%   and the motor cortex; and one for V1 and V2
 multipleCompCorr_SingleThreshold(classifier);
