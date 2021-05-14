@@ -4,7 +4,7 @@ function groupAnalysis_Perm(classifier)
 
 subjects = 8;
 patches = 2;
-nPerm = 100;
+nPerm = 1000;
 
 if classifier == 1
     folder = 'SVM';

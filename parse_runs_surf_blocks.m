@@ -7,7 +7,7 @@
 %   · test_set: Test set (last iteration in CV)
 %   · anovas: ANOVA tables (one per run) of the training set.
 
-function [train_set, test_set, anovas] = parse_runs_surf_blocks(mask_vox2)
+function [train_set, test_set] = parse_runs_surf_blocks(mask_vox2)
 
 [nPerRun, nVert, nConditions, nRuns] = size(mask_vox2);
 
@@ -60,7 +60,7 @@ for f = 1:nFolds
     train_set(:,:,f) = train; 
     test_set(:,:,f) = test;
     
-    [anovas(:,:,f)] = voi_ANOVA(squeeze(train_set(:,:,f)), gp); % Compute ANOVAs per block of training set 
+    %[anovas(:,:,f)] = voi_ANOVA(squeeze(train_set(:,:,f)), gp); % Compute ANOVAs per block of training set 
     
 end
 

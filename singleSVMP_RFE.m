@@ -13,7 +13,7 @@ nRuns = size(betasC,4);
 
 fprintf('\nParsing train and test sets...\n');
 % Parse for cross-validation cycles
-[train_set, test_set, anovas] = parse_runs_surf_blocks(betasC);
+[train_set, test_set] = parse_runs_surf_blocks(betasC);
 
 % Output variables
 nFolds = size(train_set,3);
@@ -140,7 +140,6 @@ end
 % Proper output format
 data{1} = train_set;
 data{2} = test_set;
-data{3} = anovas;
 
 svmOut = [];
 svmOut.models = svm_mod;    % SVM model for each cross-validation fold

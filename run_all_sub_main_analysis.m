@@ -8,15 +8,11 @@ function run_all_sub_main_analysis(type, classifier, cv)
 
     subjects = 8; % Number of subjects
     CondClass = [{'forest'}, {'people'}, {'traffic'}]; % Conditions to classify (stimuli): Forest, People and Traffic (1, 2 and 3)
-    if type == 1 % Volume-based
-        patches = 3; % Number of patches of the EVC (V1, V2 and V3)
-    else % Surface-based
-        patches = 2; % Number of patches of the EVC (V1 and V2)
-    end
+    patches = 2; % Number of patches for the EVC
 
-    for subject = 1:subjects
+    for subject = 4:subjects
         if subject ~= 6 % Skip the 6th subject (corrupted file)
-            for POIfile_ind = 1:3  % 3 POIs/ROIs: Auditory, Motor and EVC
+            for POIfile_ind = 3:3  % 3 POIs/ROIs: Auditory, Motor and EVC
                 if POIfile_ind == 3
                     for patch = 1:patches
                         run_single_sub_CollapseHem_main_analysis_parallel(subject, patch, CondClass, POIfile_ind, type, classifier, cv);

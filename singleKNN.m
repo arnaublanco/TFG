@@ -13,7 +13,7 @@ nPerRun = size(betasC,1);
 nRuns = size(betasC,4);
 
 % Parse for cross-validation cycles
-[train_set, test_set, anovas] = parse_runs_surf_blocks(betasC);
+[train_set, test_set] = parse_runs_surf_blocks(betasC);
 
 acc_avg = []; % Initialize average accuracy
 % Cross-validation with KNN
@@ -51,6 +51,7 @@ for f = 1:size(train_set,3)
     % Remove NaNs in train and test sets
     [~,v] = find(isnan(train)); % Find NaNs in train set
     train(:,unique(v)) = []; % Remove NaNs from train set
+    test2(:,unique(v)) = []; % Remove NaNs from test set
     
     acc = [];
     nMax = 100;
@@ -113,21 +114,25 @@ for f = 1:size(train_set,3)
     train(:,unique(v)) = []; % Remove NaNs from train set
     test2(:,unique(v)) = []; % Remove NaNs from test set
     
+    fprintf(['\nTraining SVM model for fold ',int2str(f)]);
+    pause(1);
+    
     % Fit KNN with train set
     KNN = fitcknn(train,gp,'NumNeighbors',numK,'Distance','Euclidean','Standardize',1);
     
-    % Predict labels block-wise and condition-wise
+    % Predict labels condition-wise
+    fprintf('\nPredicting conditions...\n');
     labels_cond = predict(KNN,test2);
     
-    % Compute accuracy block-wise and condition-wise
+    % Compute accuracy condition-wise
     acc_cond = sum(CondClass' == labels_cond)/size(labels_cond,1);
+    fprintf(['\nPrediction accuracy: ',num2str(acc_cond*100),'\n']);
     accuracy_c = cat(2,accuracy_c,acc_cond);
     
 end
 
 data{1} = train_set;
 data{2} = test_set;
-data{3} = anovas;
 
 knnOut = [];
 knnOut.pc = accuracy_c;

@@ -17,7 +17,6 @@ nPerRun = p(3);
 nRuns = p(5);
 
 % Output variables
-svm_ws = cell(1,nRuns);
 svm_class = zeros(nPerRun*(nConditions),nRuns);
 svma_class = zeros(nConditions,nRuns);
 svm_cm = zeros(nConditions,nConditions,nRuns);
@@ -75,10 +74,6 @@ for r = 1:size(train_set,3)
     
     svm_model = svmtrain(gp, train, '-t 0 -c 1'); % -t 0 = linear SVM, -c 1 = cost value of 1
     svm_mod{r} = svm_model;
-    
-    % Get the weights from model
-    svm_weights = svm_DefineWeights(svm_model);  
-    svm_ws{r} = svm_weights;
 
     % Define coding variable for testing
     gp_test = []; k = 1; l = nPerRun;
@@ -126,7 +121,6 @@ data{2} = test_set;
 
 svmOut = [];
 svmOut.models = svm_mod;    % SVM model for each cross-validation fold
-svmOut.ws = svm_ws;         % Weights for each binary classification pbm
 svmOut.class = svm_class;   % Single-block classifications
 svmOut.Aclass = svma_class; % Average classification
 svmOut.cm = svm_cm;         % Confusion matrices for single block classifications

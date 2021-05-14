@@ -1,20 +1,19 @@
 % Function that computes Support Vector Machine for the betas.
 %  INPUT:
-%   · betasC: Matrix containing the betas.
+%   · train_set: Train set.
+%   · test_set: Test set.
+%   · p: Data info.
 %   · CondClass: Stimuli (1: Forest, 2: People, 3: Traffic)
 %   · permGP: 0 for normal analysis; 1 for randomization of labels
 %   · inputRandVec: Randomization vector.
 %  OUTPUT:
 %   · svmOut: MATLAB object containing the results of the SVM.
 
-function [svmOut] = singleSVMP_PermP_block(betasC, CondClass, permGP, inputRandVec)
+function [svmOut] = singleSVMP_PermP_block(train_set, test_set, p, CondClass, permGP, inputRandVec)
 
-nConditions = size(betasC,3);
-nPerRun = size(betasC,1);
-nRuns = size(betasC,4);
-
-% Parse for cross-validation cycles
-[train_set, test_set, anovas] = parse_runs_surf_blocks(betasC);
+nConditions = p(2);
+nPerRun = p(3);
+nRuns = p(5);
 
 % Output variables
 nFolds = size(train_set,3);
@@ -82,7 +81,6 @@ end
 % Proper output format
 data{1} = train_set;
 data{2} = test_set;
-data{3} = anovas;
 
 svmOut = [];
 svmOut.models = svm_mod;    % SVM model for each cross-validation fold
