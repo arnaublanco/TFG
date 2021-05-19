@@ -10,20 +10,6 @@
 
 function run_single_sub_CollapseHem_main_analysis_parallel(subject, Patch_ind, CondClass, POIfile_ind, dataType, classifier, cv)
 
-% tmp = subject;
-% if POIfile_ind == 1
-%     load('Results/SVM/surface/across_blocks/sub-01_MainAnalysis_CollapseHem_Patch1_POI1.mat')
-% elseif POIfile_ind == 2
-%     load('Results/SVM/surface/across_blocks/sub-01_MainAnalysis_CollapseHem_Patch1_POI2.mat')
-% else
-%    if Patch_ind == 1
-%        load('Results/SVM/surface/across_blocks/sub-01_MainAnalysis_CollapseHem_Patch1_POI3.mat')
-%    else
-%        load('Results/SVM/surface/across_blocks/sub-01_MainAnalysis_CollapseHem_Patch2_POI3.mat')
-%    end
-% end
-% subject = tmp;
-
 if POIfile_ind == 1
     roi = 'auditory cortex';
 elseif POIfile_ind == 2

@@ -14,7 +14,7 @@ addpath(genpath('/Applications/freesurfer/matlab'));
 dataType = 2;
 
 % Options: Classifier -> 1: SVM and 2: SVM-RFE
-classifier = 2;
+classifier = 1;
 
 % Options: In the case of SVM, run cross-validation per run (1) or per
 % block (2).
@@ -48,4 +48,7 @@ single_sub_meanClassAccu(classifier);
 %   2. Obtain p-values.
 groupAnalysis_Perm(classifier);
 
-disp('Pipeline completed.');
+% Run multipleCompCorr_SingleThreshold.m:
+%   1. Compute overall classification for every region.
+%   2. Compute 
+multipleCompCorr_SingleThreshold(classifier);
