@@ -13,8 +13,8 @@ addpath(genpath('/Applications/freesurfer/matlab'));
 % surface-based data (2)
 dataType = 2;
 
-% Options: Classifier -> 1: SVM, 2: SVM-RFE, 3: KNN
-classifier = 2;
+% Options: Classifier -> 1: SVM and 2: SVM-RFE
+classifier = 1;
 
 % Options: In the case of SVM, run cross-validation per run (1) or per
 % block (2).

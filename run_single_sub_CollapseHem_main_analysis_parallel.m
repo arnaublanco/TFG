@@ -5,24 +5,24 @@
 %   · CondClass: Experimental conditions.
 %   · POIfile_ind: POI/ROI (Visual, Motor or EVC).
 %   · dataType: Volume-based (1) or surface-based (2).
-%   · classifier: SVM (1), SVM-RFE (2) or KNN (3).
+%   · classifier: SVM (1) or SVM-RFE (2).
 %   · cv: Cross-validation per run (1) or per block (2).
 
 function run_single_sub_CollapseHem_main_analysis_parallel(subject, Patch_ind, CondClass, POIfile_ind, dataType, classifier, cv)
 
-tmp = subject;
-if POIfile_ind == 1
-    load('Results/SVM/surface/across_blocks/sub-01_MainAnalysis_CollapseHem_Patch1_POI1.mat')
-elseif POIfile_ind == 2
-    load('Results/SVM/surface/across_blocks/sub-01_MainAnalysis_CollapseHem_Patch1_POI2.mat')
-else
-   if Patch_ind == 1
-       load('Results/SVM/surface/across_blocks/sub-01_MainAnalysis_CollapseHem_Patch1_POI3.mat')
-   else
-       load('Results/SVM/surface/across_blocks/sub-01_MainAnalysis_CollapseHem_Patch2_POI3.mat')
-   end
-end
-subject = tmp;
+% tmp = subject;
+% if POIfile_ind == 1
+%     load('Results/SVM/surface/across_blocks/sub-01_MainAnalysis_CollapseHem_Patch1_POI1.mat')
+% elseif POIfile_ind == 2
+%     load('Results/SVM/surface/across_blocks/sub-01_MainAnalysis_CollapseHem_Patch1_POI2.mat')
+% else
+%    if Patch_ind == 1
+%        load('Results/SVM/surface/across_blocks/sub-01_MainAnalysis_CollapseHem_Patch1_POI3.mat')
+%    else
+%        load('Results/SVM/surface/across_blocks/sub-01_MainAnalysis_CollapseHem_Patch2_POI3.mat')
+%    end
+% end
+% subject = tmp;
 
 if POIfile_ind == 1
     roi = 'auditory cortex';
@@ -38,11 +38,8 @@ end
 
 if classifier == 1
     folder = 'SVM';
-elseif classifier == 2
-    folder = 'SVM_RFE';
-    cv = 2;
 else
-    folder = 'KNN';
+    folder = 'SVM_RFE';
     cv = 2;
 end
 
@@ -112,11 +109,10 @@ if classifier == 1
     else
         [OutObs] = singleSVMP_block(betasC, nCond, permGP);
     end
-elseif classifier == 2
-    [OutObs] = singleSVMP_RFE(betasC, nCond);
 else
-    [OutObs] = singleKNN(betasC, nCond, permGP);
+    [OutObs] = singleSVMP_RFE(betasC, nCond);
 end
+
 Obs_Spc = mean(OutObs.pc); % Percentage correct single-block
 Obs_Apc = mean(OutObs.av); % Percentage correct average
 
@@ -125,34 +121,34 @@ pause(1);
 tic % Start a stopwatch timer
 
 % Executes for loop in parallel with other processes
-% fprintf(['\nComputing ',folder,' with permuted labels...']);
-% pause(1);
-% permGP = 1;
-% % Parse for cross-validation cycles
-% if cv == 1
-%     [train_set, test_set] = parse_runs_surf(betasC);
-% else
-%     [train_set, test_set] = parse_runs_surf_blocks(betasC);
-% end
-% 
-% if classifier ~= 3
-%     parfor (i = 1:nPermutations)
-%         if cv == 1
-%             [OutPerm] = singleSVM_PermP(train_set, test_set, p, 1:3, permGP, inputRandVec(:,i));
-%         else
-%             [OutPerm] = singleSVMP_PermP_block(train_set, test_set, p, 1:3, permGP, inputRandVec(:,i));
-%         end
-%         Spc(i) = mean(OutPerm.pc);
-%         Apc(i) = mean(OutPerm.av);
-%     end
-% else
-%     parfor (i = 1:nPermutations)
-%         [OutPerm] = singleKNN_Perm(train_set, test_set, p, 1:3, permGP, inputRandVec(:,i));
-%         Spc(i) = mean(OutPerm.pc);
-%         Apc(i) = mean(OutPerm.av);
-%     end
-% end
-% fprintf(['\n',int2str(nPermutations),' realizations with permuted labels done.\n']);
+fprintf(['\nComputing ',folder,' with permuted labels...']);
+pause(1);
+permGP = 1;
+% Parse for cross-validation cycles
+if cv == 1
+    [train_set, test_set] = parse_runs_surf(betasC);
+else
+    [train_set, test_set] = parse_runs_surf_blocks(betasC);
+end
+
+if classifier ~= 3
+    parfor (i = 1:nPermutations)
+        if cv == 1
+            [OutPerm] = singleSVM_PermP(train_set, test_set, p, 1:3, permGP, inputRandVec(:,i));
+        else
+            [OutPerm] = singleSVMP_PermP_block(train_set, test_set, p, 1:3, permGP, inputRandVec(:,i));
+        end
+        Spc(i) = mean(OutPerm.pc);
+        Apc(i) = mean(OutPerm.av);
+    end
+else
+    parfor (i = 1:nPermutations)
+        [OutPerm] = singleKNN_Perm(train_set, test_set, p, 1:3, permGP, inputRandVec(:,i));
+        Spc(i) = mean(OutPerm.pc);
+        Apc(i) = mean(OutPerm.av);
+    end
+end
+fprintf(['\n',int2str(nPermutations),' realizations with permuted labels done.\n']);
 
 % toc % Elapsed for time for 1000 permutations in parallel
 
