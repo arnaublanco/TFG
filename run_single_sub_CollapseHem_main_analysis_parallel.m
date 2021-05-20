@@ -117,35 +117,21 @@ else
     [train_set, test_set] = parse_runs_surf_blocks(betasC);
 end
 
-if classifier ~= 3
-    parfor (i = 1:nPermutations)
-        if cv == 1
-            [OutPerm] = singleSVM_PermP(train_set, test_set, p, 1:3, permGP, inputRandVec(:,i));
-        else
-            [OutPerm] = singleSVMP_PermP_block(train_set, test_set, p, 1:3, permGP, inputRandVec(:,i));
-        end
-        Spc(i) = mean(OutPerm.pc);
-        Apc(i) = mean(OutPerm.av);
+parfor (i = 1:nPermutations)
+    if cv == 1
+        [OutPerm] = singleSVM_PermP(train_set, test_set, p, 1:3, permGP, inputRandVec(:,i));
+    else
+        [OutPerm] = singleSVMP_PermP_block(train_set, test_set, p, 1:3, permGP, inputRandVec(:,i));
     end
-else
-    parfor (i = 1:nPermutations)
-        [OutPerm] = singleKNN_Perm(train_set, test_set, p, 1:3, permGP, inputRandVec(:,i));
-        Spc(i) = mean(OutPerm.pc);
-        Apc(i) = mean(OutPerm.av);
-    end
+    Spc(i) = mean(OutPerm.pc);
+    Apc(i) = mean(OutPerm.av);
 end
 fprintf(['\n',int2str(nPermutations),' realizations with permuted labels done.\n']);
 
-% toc % Elapsed for time for 1000 permutations in parallel
-
+toc % Elapsed for time for 1000 permutations in parallel
 
 pPerm_Spc = length(find(Spc >= Obs_Spc)) ./ nPermutations;
 pPerm_Apc = length(find(Apc >= Obs_Apc)) ./ nPermutations;
-
-% t-test across runs
-nConditions = length(outD.S{5}.CondClass);  % Conditions being classified
-[hST,pST,ci,statsST] = ttest(OutObs.pc,1/nConditions,.05,'right'); % Single trial
-[hAV,pAV,ci,statsAV] = ttest(OutObs.av,1/nConditions,.05,'right'); % Average
 
 % Save FWStestCGY09_V5.mat to save the output
 pause(1);

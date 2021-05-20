@@ -1,4 +1,4 @@
-% Treball de Fi de Grau: Decoding Natural Sounds in "Early" Visual Cortex of Congenitally Blind Individuals.
+% Treball de Fi de Grau: Decoding Natural Sounds in Early "Visual" Cortex of Congenitally Blind Individuals.
 
 % The code was originally created by Fraser W. Smith and was adapted by Petra Vetter and Lukasz Bola for the study of the paper.
 % It has also been modified by Arnau Blanco Borrego.
@@ -11,10 +11,10 @@ addpath(genpath('/Applications/freesurfer/matlab'));
 
 % Options: Run classification on volume-based data (1) and/or on
 % surface-based data (2)
-dataType = 2;
+dataType = 1;
 
 % Options: Classifier -> 1: SVM and 2: SVM-RFE
-classifier = 2;
+classifier = 1;
 
 % Options: In the case of SVM, run cross-validation per run (1) or per
 % block (2).
